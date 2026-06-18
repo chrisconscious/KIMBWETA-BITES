@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Admin — KIMBWETA BITES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/styles/variables.css?v=20260605">
+<link rel="stylesheet" href="src/styles/main.css?v=20260605">
+<link rel="stylesheet" href="src/styles/layout.css?v=20260605">
+<link rel="stylesheet" href="src/styles/components.css?v=20260605">
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+
+<!-- Product Modal -->
+<div class="modal-bg" id="productModal">
+  <div class="modal modal-lg" id="productModalContent"></div>
+</div>
+
+<div class="admin-shell">
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="nav-logo">
+        <div class="nav-logo-icon" style="width:32px;height:32px;font-size:14px">K</div>
+        <div style="min-width:0">
+          <div style="font-family:var(--ff-display);font-weight:700;font-size:14px;line-height:1">KIMBWETA</div>
+          <div style="font-size:11px;color:var(--text3)" id="sidebarCampusName">Campus Admin</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">Overview</div>
+    <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+      Dashboard
+    </div>
+
+    <div class="sidebar-section">Operations</div>
+    <div class="nav-item" id="nav-orders" onclick="showTab('orders')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Orders <span class="nav-badge" id="pendingOrdersBadge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" id="nav-products" onclick="showTab('products')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+      Products
+    </div>
+    <div class="nav-item" id="nav-riders" onclick="showTab('riders')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6h-4l-3 7h10l-3-7z"/></svg>
+      Riders
+    </div>
+
+    <div style="margin-top:auto;padding:16px 10px;border-top:1px solid var(--border)">
+      <div class="nav-item" onclick="window.location.href='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Back to Store
+      </div>
+      <div class="nav-item" style="color:var(--red)" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+        Sign Out
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main Content ─────────────────────────────────────── -->
+  <div class="admin-main">
+    <div class="admin-header">
+      <div>
+        <div class="h2" id="adminGreeting">Dashboard</div>
+        <div style="font-size:14px;color:var(--text2);margin-top:4px"><span class="dot"></span> <span id="adminCampusLabel">Loading...</span></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Refresh
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="showTab('products');openAddProduct()">+ Add Product</button>
+      </div>
+    </div>
+
+    <!-- TAB: Dashboard -->
+    <div id="tab-dashboard">
+      <div class="stats-grid stagger-in" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon brand"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="stat-value grad-text" id="statRevenue">—</div><div class="stat-label">Revenue Today (TZS)</div></div>
+        <div class="stat-card"><div class="stat-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg></div><div class="stat-value" style="color:var(--green)" id="statDelivered">—</div><div class="stat-label">Delivered Today</div></div>
+        <div class="stat-card"><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div><div class="stat-value" style="color:var(--amber)" id="statPending">—</div><div class="stat-label">Pending Orders</div></div>
+        <div class="stat-card"><div class="stat-icon brand"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="stat-value" style="color:var(--brand)" id="statProducts">—</div><div class="stat-label">Active Products</div></div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="h3">Live Orders</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)">
+          <span class="dot" style="animation:pulseRing 1.5s infinite"></span> Auto-refreshing
+        </div>
+      </div>
+      <div id="dashOrdersTable"><div class="loading-state">Loading orders...</div></div>
+    </div>
+
+    <!-- TAB: Orders -->
+    <div id="tab-orders" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div class="h3">All Orders</div>
+        <div style="display:flex;gap:8px">
+          <select class="input select" style="width:auto;font-size:13px" id="orderStatusFilter" onchange="loadOrders()">
+            <option value="">All Status</option>
+            <option value="PENDING">Pending</option>
+            <option value="ACCEPTED">Accepted</option>
+            <option value="PREPARING">Preparing</option>
+            <option value="ON_THE_WAY">On the Way</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div id="ordersTable"><div class="loading-state">Loading...</div></div>
+    </div>
+
+    <!-- TAB: Products -->
+    <div id="tab-products" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div class="h3">Products</div>
+        <button class="btn btn-primary btn-sm" onclick="openAddProduct()">+ Add Product</button>
+      </div>
+      <div id="productsTable"><div class="loading-state">Loading...</div></div>
+    </div>
+
+    <!-- TAB: Riders -->
+    <div id="tab-riders" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div class="h3">Delivery Riders</div>
+        <button class="btn btn-primary btn-sm" onclick="openAddRider()">+ Register Rider</button>
+      </div>
+      <div id="ridersTable"><div class="loading-state">Loading...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCRIPTS ═══════════════════════════════════════════════ -->
+<script defer src="src/config/constants.js?v=20260610"></script>
+<script defer src="src/config/endpoints.js?v=20260610"></script>
+<script defer src="src/utils/storage.js?v=20260610"></script>
+<script defer src="src/utils/helpers.js?v=20260610"></script>
+<script defer src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script defer src="src/scripts/api.js?v=20260610"></script>
+<script defer src="src/components/toast.js?v=20260610"></script>
+
+<script>
+// ── State ───────────────────────────────────────────────────────
+let adminUser = null;
+let campusId  = null;
+let categories = [];
+let autoRefreshTimer = null;
+
+// ── Auth Guard ─────────────────────────────────────────────────
+function checkAuth() {
+  const token = Storage.getStr('kb_token');
+  const user  = Storage.get('kb_user');
+  const role  = String(user?.role || '').toLowerCase();
+  console.debug('admin.checkAuth', { tokenExists: !!token, user, role });
+  if (!token || !user || !['admin','super_admin'].includes(role)) {
+    window.location.href = 'index.html';
+    return false;
+  }
+  adminUser = { ...user, role };
+  campusId  = user.campusId;
+  if (!campusId) {
+    Toast.show('error','No campus assigned to this account.');
+    setTimeout(() => window.location.href = 'index.html', 2000);
+    return false;
+  }
+  return true;
+}
+
+function logout() {
+  API.post(EP.LOGOUT, {}).catch(() => {});
+  ['kb_token','kb_refresh','kb_user'].forEach(k => Storage.remove(k));
+  window.location.href = 'index.html';
+}
+
+function closeModal() {
+  document.getElementById('productModal').classList.remove('active');
+  document.getElementById('overlay').classList.remove('open');
+  document.body.classList.remove('no-scroll');
+}
+
+function openModal(html) {
+  document.getElementById('productModalContent').innerHTML = html;
+  document.getElementById('productModal').classList.add('active');
+  document.getElementById('overlay').classList.add('open');
+  document.body.classList.add('no-scroll');
+}
+
+// ── Tab Navigation ──────────────────────────────────────────────
+function showTab(name) {
+  ['dashboard','orders','products','riders'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t === name ? 'block' : 'none';
+    document.getElementById(`nav-${t}`).classList.toggle('active', t === name);
+  });
+  if (name === 'orders')   loadOrders();
+  if (name === 'products') loadProducts();
+  if (name === 'riders')   loadRiders();
+}
+
+var _loadingDashboard = false;
+
+// ── Dashboard ───────────────────────────────────────────────────
+async function loadDashboard() {
+  if (_loadingDashboard) return;
+  _loadingDashboard = true;
+  try {
+    const [statsRes, ordersRes] = await Promise.allSettled([
+      API.getCampusStats(campusId),
+      API.get(`/orders?campusId=${campusId}&limit=10`, 15000),
+    ]);
+
+    if (statsRes.status === 'fulfilled' && statsRes.value?.data) {
+      const s = statsRes.value.data;
+      document.getElementById('statProducts').textContent = s.products ?? '—';
+      document.getElementById('statPending').textContent  = s.pendingOrders ?? '—';
+      document.getElementById('statDelivered').textContent = s.deliveredToday ?? '—';
+      document.getElementById('statRevenue').textContent  = s.revenueToday ? Number(s.revenueToday).toLocaleString() : '—';
+    }
+
+    if (ordersRes.status === 'fulfilled' && ordersRes.value?.data) {
+      const orders = ordersRes.value.data.data || ordersRes.value.data || [];
+      const pending = orders.filter(o => o.status === 'PENDING').length;
+      const badge = document.getElementById('pendingOrdersBadge');
+      badge.textContent = pending;
+      badge.style.display = pending > 0 ? 'inline-flex' : 'none';
+      renderOrdersTable('dashOrdersTable', orders.slice(0,10));
+    }
+  } catch (e) {
+    document.getElementById('dashOrdersTable').innerHTML = '<div class="error-state"><p>Failed to load dashboard data. Check your connection.</p></div>';
+  } finally {
+    _loadingDashboard = false;
+  }
+}
+
+// ── Orders ──────────────────────────────────────────────────────
+async function loadOrders() {
+  document.getElementById('ordersTable').innerHTML = '<div class="loading-state">Loading orders...</div>';
+  try {
+    const status = document.getElementById('orderStatusFilter')?.value || '';
+    const path = `/orders?campusId=${campusId}${status ? '&status='+status : ''}&limit=50`;
+    const data = await API.get(path, 15000);
+    const orders = data?.data?.data || data?.data || [];
+    renderOrdersTable('ordersTable', orders);
+  } catch {
+    document.getElementById('ordersTable').innerHTML = '<div class="error-state"><p>Failed to load orders.</p></div>';
+  }
+}
+
+function renderOrdersTable(containerId, orders) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!orders.length) {
+    el.innerHTML = '<div class="error-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 11l3 3L22 4"/></svg><p>No orders found</p></div>';
+    return;
+  }
+  const statusColors = { PENDING:'amber', ACCEPTED:'blue', PREPARING:'brand', ON_THE_WAY:'green', DELIVERED:'green', CANCELLED:'red' };
+  el.innerHTML = `<div class="table-wrap"><table class="table">
+    <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+    ${orders.map(o => `<tr>
+      <td><strong>#KB-${(o.id||'').slice(-4).toUpperCase()}</strong><br><span style="font-size:12px;color:var(--text3)">${timeAgo(o.createdAt)}</span></td>
+      <td><div style="font-weight:500">${o.user?.name || 'Customer'}</div><div style="font-size:12px;color:var(--text3)">${o.user?.phoneNumber || ''}</div></td>
+      <td style="font-size:13px">${(o.items||[]).map(i=>`${i.productNameSnapshot||i.name} ×${i.quantity}`).join(', ') || '—'}</td>
+      <td><span class="grad-text" style="font-family:var(--ff-display);font-weight:700">TZS ${Number(o.totalAmount||0).toLocaleString()}</span></td>
+      <td><span class="status status-${(o.status||'').toLowerCase().replace('_','-')}">${o.status||'—'}</span></td>
+      <td><div class="table-actions">
+        ${nextAction(o.status,o.id)}
+        <a href="tel:${o.user?.phoneNumber||''}" class="btn btn-ghost btn-sm" title="Call">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.69 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.88 4.18 2 2 0 0 1 4.87 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.91 9.6a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </a>
+      </div></td>
+    </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function nextAction(status, id) {
+  const map = { PENDING: ['Accept','ACCEPTED'], ACCEPTED: ['Preparing','PREPARING'], PREPARING: ['On the Way','ON_THE_WAY'], ON_THE_WAY: ['Delivered','DELIVERED'] };
+  if (!map[status]) return '';
+  const [label, next] = map[status];
+  return `<button class="btn btn-primary btn-sm" onclick="updateOrderStatus('${id}','${next}')">${label}</button>`;
+}
+
+async function updateOrderStatus(id, status) {
+  try {
+    const r = await API.updateOrderStatus(id, status);
+    if (r.ok) {
+      Toast.show('success', `Order → ${status.replace('_',' ')}`);
+      loadDashboard();
+      if (document.getElementById('tab-orders').style.display !== 'none') loadOrders();
+    } else {
+      const d = await r.json();
+      Toast.show('error', d.message || 'Update failed');
+    }
+  } catch { Toast.show('error','Connection error'); }
+}
+
+// ── Products ────────────────────────────────────────────────────
+async function loadProducts() {
+  document.getElementById('productsTable').innerHTML = '<div class="loading-state">Loading...</div>';
+  try {
+    const data = await API.getAdminProducts(campusId);
+    const products = data?.data?.data || data?.data || [];
+    if (!products.length) {
+      document.getElementById('productsTable').innerHTML = '<div class="error-state"><p>No products yet.</p><button class="btn btn-primary btn-sm" onclick="openAddProduct()">Add first product</button></div>';
+      return;
+    }
+    document.getElementById('productsTable').innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+      ${products.map(p => `<tr>
+        <td><div style="font-weight:600">${p.name}</div><div style="font-size:12px;color:var(--text3)">${(p.description||'').slice(0,40)}...</div></td>
+        <td style="font-size:13px">${p.category?.name || '—'}</td>
+        <td><span style="font-family:var(--ff-display);font-weight:700">TZS ${Number(p.price).toLocaleString()}</span></td>
+        <td>${p.inventory?.quantity ?? '—'}</td>
+        <td><span class="status status-${(p.status||'').toLowerCase()}">${p.status||'—'}</span></td>
+        <td><div class="table-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openEditProduct('${p.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}','${p.name}')">Delete</button>
+        </div></td>
+      </tr>`).join('')}
+      </tbody></table></div>`;
+  } catch {
+    document.getElementById('productsTable').innerHTML = '<div class="error-state"><p>Failed to load products.</p></div>';
+  }
+}
+
+function openAddProduct() {
+  openModal(`
+    <div class="modal-header">
+      <div class="h3">Add Product</div>
+      <button class="modal-close" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+      <div class="field"><label>Product Name *</label><input class="input" id="pName" placeholder="e.g. Chips Mbuzi"></div>
+      <div class="field"><label>Description</label><textarea class="input" id="pDesc" rows="3" placeholder="Describe the product..."></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>Price (TZS) *</label><input class="input" id="pPrice" type="number" min="0" placeholder="2500"></div>
+        <div class="field"><label>Stock Quantity</label><input class="input" id="pQty" type="number" min="0" placeholder="50"></div>
+      </div>
+      <div class="field"><label>Category *</label>
+        <select class="input select" id="pCat">
+          <option value="">Select category</option>
+          ${categories.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Product Image (optional)</label><input class="input" id="pImage" type="file" accept="image/*" style="padding:8px"></div>
+      <div id="productFormError" style="color:var(--red);font-size:13px;display:none"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="saveProductBtn" onclick="saveProduct(null)">Submit for Approval</button>
+      </div>
+    </div>`);
+}
+
+async function openEditProduct(id) {
+  try {
+    const data = await API.get(`/products/${id}`, 5000);
+    const p = data?.data;
+    if (!p) return;
+    openModal(`
+      <div class="modal-header">
+        <div class="h3">Edit Product</div>
+        <button class="modal-close" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+        <div class="field"><label>Product Name *</label><input class="input" id="pName" value="${p.name}" placeholder="e.g. Chips Mbuzi"></div>
+        <div class="field"><label>Description</label><textarea class="input" id="pDesc" rows="3">${p.description||''}</textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field"><label>Price (TZS) *</label><input class="input" id="pPrice" type="number" value="${p.price}" min="0"></div>
+          <div class="field"><label>Stock Quantity</label><input class="input" id="pQty" type="number" value="${p.inventory?.quantity||0}" min="0"></div>
+        </div>
+        <div class="field"><label>Category *</label>
+          <select class="input select" id="pCat">
+            ${categories.map(c=>`<option value="${c.id}" ${c.id===p.categoryId?'selected':''}>${c.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Replace Image (optional)</label><input class="input" id="pImage" type="file" accept="image/*" style="padding:8px"></div>
+        <div id="productFormError" style="color:var(--red);font-size:13px;display:none"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" id="saveProductBtn" onclick="saveProduct('${id}')">Save Changes</button>
+        </div>
+      </div>`);
+  } catch { Toast.show('error','Failed to load product'); }
+}
+
+async function saveProduct(id) {
+  const name = document.getElementById('pName')?.value?.trim();
+  const desc = document.getElementById('pDesc')?.value?.trim();
+  const price = parseFloat(document.getElementById('pPrice')?.value);
+  const qty   = parseInt(document.getElementById('pQty')?.value || '99');
+  const catId = document.getElementById('pCat')?.value;
+  const imgFile = document.getElementById('pImage')?.files?.[0];
+  const errEl = document.getElementById('productFormError');
+  const btn   = document.getElementById('saveProductBtn');
+
+  if (!name || !price || !catId) {
+    errEl.textContent = 'Name, price, and category are required.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Saving...';
+  errEl.style.display = 'none';
+
+  const fd = new FormData();
+  fd.append('name', name);
+  fd.append('description', desc || '');
+  fd.append('price', price.toString());
+  fd.append('quantity', qty.toString());
+  fd.append('categoryId', catId);
+  fd.append('campusId', campusId);
+  if (imgFile) fd.append('image', imgFile);
+
+  try {
+    const r = id ? await API.updateProduct(id, fd) : await API.createProduct(fd);
+    const data = await r.json();
+    if (r.ok) {
+      Toast.show('success', id ? 'Product updated!' : 'Product submitted for approval!');
+      closeModal();
+      loadProducts();
+    } else {
+      errEl.textContent = data.message || 'Save failed.';
+      errEl.style.display = 'block';
+    }
+  } catch {
+    errEl.textContent = 'Connection error.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = id ? 'Save Changes' : 'Submit for Approval';
+  }
+}
+
+async function deleteProduct(id, name) {
+  if (!confirm('Permanently delete "' + name + '"? This cannot be undone.')) return;
+  try {
+    const r = await API.deleteProduct(id);
+    if (r.ok) { Toast.show('success','Product permanently deleted'); loadProducts(); }
+    else Toast.show('error','Delete failed');
+  } catch { Toast.show('error','Connection error'); }
+}
+
+// ── Riders ──────────────────────────────────────────────────────
+async function loadRiders() {
+  document.getElementById('ridersTable').innerHTML = '<div class="loading-state">Loading...</div>';
+  try {
+    const data = await API.getRiders(campusId);
+    const riders = data?.data || [];
+    if (!riders.length) {
+      document.getElementById('ridersTable').innerHTML = '<div class="error-state"><p>No riders registered yet.</p><button class="btn btn-primary btn-sm" onclick="openAddRider()">Register first rider</button></div>';
+      return;
+    }
+    const statusCol = { PENDING_APPROVAL:'amber', ACTIVE:'green', INACTIVE:'red', SUSPENDED:'red' };
+    document.getElementById('ridersTable').innerHTML = `<div class="table-wrap"><table class="table">
+      <thead><tr><th>Rider</th><th>Phone</th><th>Vehicle</th><th>Status</th></tr></thead>
+      <tbody>
+      ${riders.map(r => `<tr>
+        <td><div style="font-weight:600">${r.user?.name||'—'}</div></td>
+        <td style="font-size:13px">${r.user?.phoneNumber||'—'}</td>
+        <td style="font-size:13px">${r.vehicleType||'—'} · ${r.vehiclePlate||'—'}</td>
+        <td><span class="status status-${(r.status||'').toLowerCase().replace('_','-')}">${r.status||'—'}</span></td>
+      </tr>`).join('')}
+      </tbody></table></div>`;
+  } catch {
+    document.getElementById('ridersTable').innerHTML = '<div class="error-state"><p>Failed to load riders.</p></div>';
+  }
+}
+
+function openAddRider() {
+  openModal(`
+    <div class="modal-header">
+      <div class="h3">Register Rider</div>
+      <button class="modal-close" onclick="closeModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+      <p style="font-size:13px;color:var(--text2)">Enter the rider's user ID. They must have an account first.</p>
+      <div class="field"><label>User ID (from account)</label><input class="input" id="riderUserId" placeholder="User UUID"></div>
+      <div class="field"><label>Vehicle Type</label>
+        <select class="input select" id="riderVehicle">
+          <option value="motorcycle">Motorcycle (Boda)</option>
+          <option value="bicycle">Bicycle</option>
+          <option value="walking">Walking</option>
+        </select>
+      </div>
+      <div class="field"><label>Vehicle Plate / ID</label><input class="input" id="riderPlate" placeholder="e.g. T123ABC"></div>
+      <div class="field"><label>ID Number</label><input class="input" id="riderIdNum" placeholder="National ID or Driving License"></div>
+      <div id="riderFormError" style="color:var(--red);font-size:13px;display:none"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="saveRiderBtn" onclick="saveRider()">Submit for Approval</button>
+      </div>
+    </div>`);
+}
+
+async function saveRider() {
+  const userId = document.getElementById('riderUserId')?.value?.trim();
+  const vehicleType = document.getElementById('riderVehicle')?.value;
+  const vehiclePlate = document.getElementById('riderPlate')?.value?.trim();
+  const idNumber = document.getElementById('riderIdNum')?.value?.trim();
+  const errEl = document.getElementById('riderFormError');
+  const btn = document.getElementById('saveRiderBtn');
+  if (!userId || !vehiclePlate || !idNumber) { errEl.textContent = 'All fields required.'; errEl.style.display='block'; return; }
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  try {
+    const r = await API.post(EP.RIDERS, { userId, campusId, vehicleType, vehiclePlate, idNumber });
+    const data = await r.json();
+    if (r.ok) { Toast.show('success','Rider submitted for super admin approval!'); closeModal(); loadRiders(); }
+    else { errEl.textContent = data.message||'Failed'; errEl.style.display='block'; }
+  } catch { errEl.textContent='Connection error'; errEl.style.display='block'; }
+  finally { btn.disabled=false; btn.textContent='Submit for Approval'; }
+}
+
+// ── Helpers ─────────────────────────────────────────────────────
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff/60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m/60);
+  if (h < 24) return `${h}h ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+function refreshAll() {
+  loadDashboard();
+  Toast.show('info','Refreshed');
+}
+
+// ── Boot ────────────────────────────────────────────────────────
+function boot() {
+  if (!checkAuth()) return;
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('adminGreeting').textContent = `${greeting}, ${adminUser.name}`;
+
+  // Fire all data loads in parallel — non-blocking
+  Promise.all([
+    API.get(EP.CAMPUS(campusId), 60000).then(function(d) {
+      if (d && d.data) {
+        document.getElementById('sidebarCampusName').textContent = d.data.name;
+        document.getElementById('adminCampusLabel').textContent = d.data.name;
+      }
+    }).catch(function() {}),
+    API.getCategories().then(function(d) { categories = d && d.data || []; }).catch(function() {}),
+    loadDashboard(),
+  ]);
+
+  // Auto-refresh every 60s
+  autoRefreshTimer = setInterval(loadDashboard, 60000);
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      clearInterval(autoRefreshTimer);
+    } else {
+      autoRefreshTimer = setInterval(loadDashboard, 60000);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', boot);
+window.addEventListener('beforeunload', function() { clearInterval(autoRefreshTimer); });
+</script>
+</body>
+</html>

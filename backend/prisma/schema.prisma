@@ -1,0 +1,886 @@
+// ============================================================
+// KIMBWETA BITES — Prisma Schema v2.0
+// Production-ready with all required models
+// Run: npx prisma generate && npx prisma db push
+// ============================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMs ───────────────────────────────────────────────────
+
+enum UserRole {
+  customer
+  admin
+  super_admin
+  rider
+
+  @@map("user_role")
+}
+
+enum UserStatus {
+  active
+  blocked
+  pending
+
+  @@map("user_status")
+}
+
+enum TzRegion {
+  DAR_ES_SALAAM
+  ARUSHA
+  MWANZA
+  DODOMA
+  MBEYA
+  MOROGORO
+  IRINGA
+  KIGOMA
+  TANGA
+  ZANZIBAR
+  PWANI
+
+  @@map("tz_region")
+}
+
+enum ProductStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+
+  @@map("product_status")
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  PREPARING
+  ON_THE_WAY
+  DELIVERED
+  CANCELLED
+
+  @@map("order_status")
+}
+
+enum PaymentMethod {
+  CASH
+  MOBILE
+
+  @@map("payment_method")
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+
+  @@map("payment_status")
+}
+
+enum AdStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+
+  @@map("ad_status")
+}
+
+enum AdPriority {
+  LOW
+  MEDIUM
+  HIGH
+
+  @@map("ad_priority")
+}
+
+enum AdMediaType {
+  IMAGE
+  VIDEO
+
+  @@map("ad_media_type")
+}
+
+enum AdCtaType {
+  ORDER_NOW
+  SHOP_NOW
+  LEARN_MORE
+  EXPLORE
+
+  @@map("ad_cta_type")
+}
+
+enum AdDestination {
+  HOMEPAGE
+  PRODUCT_SECTION
+  BANNER_SECTION
+  FLOATING_CARD
+
+  @@map("ad_destination")
+}
+
+enum CategoryVisibility {
+  PUBLIC
+  CAMPUS
+
+  @@map("category_visibility")
+}
+
+enum AdEventType {
+  VIEW
+  CLICK
+
+  @@map("ad_event_type")
+}
+
+enum OtpChannel {
+  SMS
+  EMAIL
+
+  @@map("otp_channel")
+}
+
+enum RiderStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+
+  @@map("rider_status")
+}
+
+enum MobileProvider {
+  MPESA
+  TIGO
+  AIRTEL
+  HALOPESA
+
+  @@map("mobile_provider")
+}
+
+// ─── MODELS ──────────────────────────────────────────────────
+
+model User {
+  id              String     @id @default(uuid())
+  name            String
+  email           String?    @unique
+  phoneNumber     String     @unique @map("phone_number")
+  passwordHash    String?    @map("password_hash")
+  phoneVerified   Boolean    @default(false) @map("phone_verified")
+  emailVerified   Boolean    @default(false) @map("email_verified")
+  role            UserRole   @default(customer)
+  status          UserStatus @default(pending)
+  campusId        String?    @map("campus_id") // for customers: their campus
+  profileImageUrl String?    @map("profile_image_url")
+  lastLoginAt     DateTime?  @map("last_login_at")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  deletedAt       DateTime?  @map("deleted_at")
+
+  // Relations
+  campus          Campus?          @relation("UserCampus", fields: [campusId], references: [id], onDelete: SetNull)
+  campusAdminOf   CampusAdmin[]    @relation("UserCampusAdmins")
+  assignedAdmins  CampusAdmin[]    @relation("AssignedBy")
+  products        Product[]        @relation("ProductCreator")
+  approvedProducts Product[]       @relation("ProductApprover")
+  orders          Order[]          @relation("CustomerOrders")
+  riderOrders     Order[]          @relation("RiderOrders")
+  rider           DeliveryRider?
+  otpCodes        OtpCode[]
+  refreshTokens   RefreshToken[]
+  adEvents        AdEvent[]
+  notifications   Notification[]
+  createdAds      Ad[]
+  createdCategories Category[]    @relation("CategoryCreator")
+  productShares   ProductShare[]
+  feedbacks       CustomerFeedback[]
+  requestedProducts RequestedProduct[]
+  savedItems         SavedItem[]
+  collections        Collection[]
+  reviews            Review[]
+  followers          Follower[]      @relation("FollowingRelation") // users following this user
+  following          Follower[]      @relation("FollowerRelation") // users this user follows
+  cancellationDetails CancellationDetail[]
+
+  @@index([phoneNumber])
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([campusId])
+  @@index([phoneNumber, status])
+  @@index([role, status])
+  @@map("users")
+}
+
+model Campus {
+  id               String    @id @default(uuid())
+  name             String
+  city             String
+  region           TzRegion
+  shortCode        String    @unique @map("short_code")
+  addressText      String?   @map("address_text")
+  latitude         Decimal?
+  longitude        Decimal?
+  logoUrl          String?   @map("logo_url")
+  isActive         Boolean   @default(true) @map("is_active")
+  maxProducts      Int       @default(100) @map("max_products")
+  maxRiders        Int       @default(20) @map("max_riders")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  users            User[]         @relation("UserCampus")
+  admins           CampusAdmin[]
+  products         Product[]
+  orders           Order[]
+  ads              Ad[]
+  riders           DeliveryRider[]
+  paymentDetails   PaymentDetail[]
+
+  @@index([region])
+  @@index([isActive])
+  @@index([region, isActive])
+  @@map("campuses")
+}
+
+model CampusAdmin {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  campusId   String   @map("campus_id")
+  isActive   Boolean  @default(true) @map("is_active")
+  assignedBy String?  @map("assigned_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user             User    @relation("UserCampusAdmins", fields: [userId], references: [id], onDelete: Cascade)
+  campus           Campus  @relation(fields: [campusId], references: [id], onDelete: Cascade)
+  assignedByUser   User?   @relation("AssignedBy", fields: [assignedBy], references: [id], onDelete: SetNull)
+
+  @@unique([userId, campusId])
+  @@index([userId])
+  @@index([campusId])
+  @@map("campus_admins")
+}
+
+model DeliveryRider {
+  id              String      @id @default(uuid())
+  userId          String      @unique @map("user_id")
+  campusId        String      @map("campus_id")
+  vehicleType     String?     @map("vehicle_type") // bicycle, motorcycle, foot
+  vehiclePlate    String?     @map("vehicle_plate")
+  idNumber        String?     @map("id_number")
+  status          RiderStatus @default(PENDING_APPROVAL)
+  isAvailable     Boolean     @default(false) @map("is_available")
+  approvedBy      String?     @map("approved_by")
+  approvedAt      DateTime?   @map("approved_at")
+  rejectionNote   String?     @map("rejection_note")
+  registeredBy    String?     @map("registered_by") // campus admin who registered
+  totalDeliveries Int         @default(0) @map("total_deliveries")
+  rating          Decimal?    // 1-5
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@index([campusId])
+  @@index([status])
+  @@index([isAvailable])
+  @@index([approvedBy])
+  @@index([registeredBy])
+  @@index([campusId, isAvailable])
+  @@index([campusId, status])
+  @@map("delivery_riders")
+}
+
+model Category {
+  id          String              @id @default(uuid())
+  name        String              @unique
+  slug        String?             @unique
+  description String?
+  iconUrl     String?             @map("icon_url")
+  coverImage  String?             @map("cover_image")
+  sortOrder   Int                 @default(0) @map("sort_order")
+  visibility  CategoryVisibility  @default(PUBLIC)
+  isActive    Boolean             @default(true) @map("is_active")
+  createdBy   String?             @map("created_by")
+  createdAt   DateTime            @default(now()) @map("created_at")
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+  deletedAt   DateTime?           @map("deleted_at")
+
+  products  Product[]
+  creator   User?     @relation("CategoryCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@index([deletedAt])
+  @@map("categories")
+}
+
+model Product {
+  id             String        @id @default(uuid())
+  name           String
+  description    String?
+  price          Int           // TZS, no decimals
+  imageUrl       String?       @map("image_url")
+  campusId       String        @map("campus_id")
+  categoryId     String?       @map("category_id")
+  createdBy      String        @map("created_by")
+  status         ProductStatus @default(PENDING)
+  approvedBy     String?       @map("approved_by")
+  approvedAt     DateTime?     @map("approved_at")
+  rejectionNote  String?       @map("rejection_note")
+  isAvailable    Boolean       @default(true) @map("is_available")
+  isFeatured     Boolean       @default(false) @map("is_featured")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  deletedAt      DateTime?     @map("deleted_at")
+
+  campus     Campus    @relation(fields: [campusId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  creator    User      @relation("ProductCreator", fields: [createdBy], references: [id])
+  approver   User?     @relation("ProductApprover", fields: [approvedBy], references: [id], onDelete: SetNull)
+  inventory  Inventory?
+  orderItems      OrderItem[]
+  shares          ProductShare[]
+  savedIn         SavedItem[]
+  collectionItems CollectionItem[]
+  reviews         Review[]
+
+  @@index([campusId])
+  @@index([status])
+  @@index([categoryId])
+  @@index([deletedAt])
+  @@index([campusId, status])
+  @@index([createdBy])
+  @@index([approvedBy])
+  @@index([isAvailable])
+  @@index([isFeatured])
+  @@index([campusId, categoryId])
+  @@index([campusId, isAvailable])
+  @@index([campusId, isFeatured])
+  @@map("products")
+}
+
+model Inventory {
+  id                String   @id @default(uuid())
+  productId         String   @unique @map("product_id")
+  quantity          Int      @default(99)
+  lowStockThreshold Int      @default(5) @map("low_stock_threshold")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("inventory")
+}
+
+model Order {
+  id                 String        @id @default(uuid())
+  userId             String        @map("user_id")
+  campusId           String        @map("campus_id")
+  totalAmount        Int           @map("total_amount")
+  status             OrderStatus   @default(PENDING)
+  paymentMethod      PaymentMethod @map("payment_method")
+  paymentStatus      PaymentStatus @default(PENDING) @map("payment_status")
+  phoneSnapshot      String        @map("phone_snapshot")
+  locationLat        Decimal?      @map("location_lat")
+  locationLng        Decimal?      @map("location_lng")
+  locationText       String?       @map("location_text")
+  riderId            String?       @map("rider_id")
+  riderNotes         String?       @map("rider_notes")
+  cancellationReason String?       @map("cancellation_reason")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  deletedAt          DateTime?     @map("deleted_at")
+
+  user    User      @relation("CustomerOrders", fields: [userId], references: [id])
+  campus  Campus    @relation(fields: [campusId], references: [id])
+  rider   User?     @relation("RiderOrders", fields: [riderId], references: [id], onDelete: SetNull)
+  items       OrderItem[]
+  feedbacks   CustomerFeedback[]
+  timeline    OrderTimeline[]
+  review      Review[]
+  cancellationDetail CancellationDetail?
+
+  @@index([userId])
+  @@index([campusId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([campusId, status])
+  @@index([riderId])
+  @@index([createdAt])
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([campusId, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                  String  @id @default(uuid())
+  orderId             String  @map("order_id")
+  productId           String  @map("product_id")
+  quantity            Int
+  priceAtTime         Int     @map("price_at_time")
+  productNameSnapshot String  @map("product_name_snapshot")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model PaymentDetail {
+  id          String         @id @default(uuid())
+  campusId    String         @map("campus_id")
+  provider    MobileProvider
+  phoneNumber String         @map("phone_number")
+  accountName String         @map("account_name")
+  instructions String?
+  isActive    Boolean        @default(true) @map("is_active")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  campus  Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
+
+  @@index([campusId])
+  @@map("payment_details")
+}
+
+model SocialLink {
+  id        String   @id @default(uuid())
+  platform  String   @unique // whatsapp, instagram, tiktok, facebook, call, email
+  url       String
+  isActive  Boolean  @default(true) @map("is_active")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("social_links")
+}
+
+model Ad {
+  id            String      @id @default(uuid())
+  title         String
+  description   String?
+  imageUrl      String      @map("image_url")
+  videoUrl      String?     @map("video_url")
+  mediaType     AdMediaType @default(IMAGE) @map("media_type")
+  targetUrl     String?     @map("target_url")
+  ctaType       AdCtaType   @default(ORDER_NOW) @map("cta_type")
+  destination   AdDestination @default(HOMEPAGE)
+  campusId      String?     @map("campus_id")
+  priority      AdPriority  @default(MEDIUM)
+  status        AdStatus    @default(DRAFT)
+  isActive      Boolean     @default(true) @map("is_active")
+  startDate     DateTime?   @map("start_date")
+  endDate       DateTime?   @map("end_date")
+  impressionCap Int?        @map("impression_cap")
+  views         Int         @default(0)
+  clicks        Int         @default(0)
+  createdBy     String?     @map("created_by")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  deletedAt     DateTime?   @map("deleted_at")
+
+  campus    Campus?   @relation(fields: [campusId], references: [id], onDelete: SetNull)
+  creator   User?     @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  events    AdEvent[]
+
+  @@index([campusId])
+  @@index([isActive])
+  @@index([status])
+  @@index([destination])
+  @@index([createdBy])
+  @@index([priority])
+  @@index([campusId, destination, isActive])
+  @@index([startDate, endDate])
+  @@map("ads")
+}
+
+model AdEvent {
+  id        String      @id @default(uuid())
+  adId      String      @map("ad_id")
+  userId    String?     @map("user_id")
+  eventType AdEventType @map("event_type")
+  ipAddress String?     @map("ip_address")
+  userAgent String?     @map("user_agent")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  ad   Ad    @relation(fields: [adId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([adId])
+  @@index([userId])
+  @@index([eventType])
+  @@map("ad_events")
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  sessionId  String?  @map("session_id")
+  campusId   String?  @map("campus_id")
+  eventType  String   @map("event_type")
+  metadata   Json     @default("{}")
+  ipAddress  String?  @map("ip_address")
+  platform   String?
+  appVersion String?  @map("app_version")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([campusId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([eventType, createdAt])
+  @@map("events")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?  @map("user_id")
+  action     String
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id")
+  campusId   String?  @map("campus_id")
+  metadata   Json     @default("{}")
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model OtpCode {
+  id          String     @id @default(uuid())
+  userId      String?    @map("user_id")
+  phoneNumber String?    @map("phone_number")
+  email       String?
+  channel     OtpChannel @default(SMS)
+  code        String
+  expiresAt   DateTime   @map("expires_at")
+  verified    Boolean    @default(false)
+  attempts    Int        @default(0)
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phoneNumber])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("otp_codes")
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  tokenHash  String   @unique @map("token_hash")
+  deviceInfo String?  @map("device_info")
+  ipAddress  String?  @map("ip_address")
+  expiresAt  DateTime @map("expires_at")
+  isRevoked  Boolean  @default(false) @map("is_revoked")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model SiteSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
+
+model ProductShare {
+  id            String   @id @default(uuid())
+  productId     String   @map("product_id")
+  userId        String?  @map("user_id")
+  campusId      String?  @map("campus_id")
+  shareReason   String   @map("share_reason")
+  sharePlatform String   @map("share_platform")
+  sharedAt      DateTime @default(now()) @map("shared_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([campusId])
+  @@index([sharedAt])
+  @@index([sharePlatform])
+  @@index([userId])
+  @@map("product_shares")
+}
+
+model CustomerFeedback {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  orderId          String   @map("order_id")
+  productId        String?  @map("product_id")
+  campusId         String?  @map("campus_id")
+  feedbackType     String   @map("feedback_type") // 'delivery' | 'cancellation'
+  rating           Int?     // 1-5 for delivery feedback
+  feedbackCategory String?  @map("feedback_category")
+  feedbackMessage  String?  @map("feedback_message")
+  recommend        String?  // 'YES' | 'NO' | 'MAYBE'
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([campusId])
+  @@index([rating])
+  @@index([feedbackType])
+  @@index([feedbackCategory])
+  @@index([campusId, rating])
+  @@map("customer_feedback")
+}
+
+model RequestedProduct {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  campusId    String?  @map("campus_id")
+  productName String   @map("product_name")
+  message     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([campusId])
+  @@map("requested_products")
+}
+
+// ─── SAVED ITEMS (Universal Wishlist / Favorites) ──────────────────
+model SavedItem {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  notes     String?
+  savedAt   DateTime @default(now()) @map("saved_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("saved_items")
+}
+
+// ─── COLLECTIONS (User-curated product groups) ────────────────────
+model Collection {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  description String?
+  coverImage  String?  @map("cover_image")
+  isPublic    Boolean  @default(true) @map("is_public")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CollectionItem[]
+
+  @@index([userId])
+  @@index([isPublic])
+  @@map("collections")
+}
+
+model CollectionItem {
+  id           String   @id @default(uuid())
+  collectionId String   @map("collection_id")
+  productId    String   @map("product_id")
+  note         String?
+  addedAt      DateTime @default(now()) @map("added_at")
+  sortOrder    Int      @default(0) @map("sort_order")
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, productId])
+  @@index([collectionId])
+  @@index([productId])
+  @@map("collection_items")
+}
+
+// ─── REVIEWS (Product ratings & reviews) ──────────────────────────
+model Review {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  productId         String   @map("product_id")
+  orderId           String?  @map("order_id")
+  rating            Int      // 1-5
+  title             String?
+  body              String?
+  isVerifiedPurchase Boolean @default(false) @map("is_verified_purchase")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order   Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([userId])
+  @@index([rating])
+  @@map("reviews")
+}
+
+// ─── FOLLOWERS (Social following system) ──────────────────────────
+model Follower {
+  id          String   @id @default(uuid())
+  followerId  String   @map("follower_id")
+  followingId String   @map("following_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  follower  User @relation("FollowerRelation", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("FollowingRelation", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+  @@map("followers")
+}
+
+// ─── ORDER TIMELINE (Granular status tracking) ────────────────────
+model OrderTimeline {
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  status    String   // status key at this point
+  label     String   // human-readable label: "Order Placed", "Confirmed", etc.
+  note      String?
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([orderId, createdAt])
+  @@map("order_timeline")
+}
+
+// ─── CANCELLATION REASONS (Detailed reason tracking) ──────────────
+model CancellationDetail {
+  id                String   @id @default(uuid())
+  orderId           String   @unique @map("order_id")
+  userId            String   @map("user_id")
+  reason            String   // predefined reason key
+  reasonLabel       String   @map("reason_label") // human-readable label
+  customMessage     String?  @map("custom_message")
+  cancelledBy       String   @map("cancelled_by") // 'customer' | 'admin' | 'system'
+  refundIssued      Boolean  @default(false) @map("refund_issued")
+  refundAmount      Int?     @map("refund_amount")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([reason])
+  @@index([createdAt])
+  @@map("cancellation_details")
+}
+
+// Add relations to User model
+// SavedItem, Collection, Review (as reviewer), Follower (as follower/following),
+// CancellationDetail need User relations — adding above.
+
+// -- Discovery Engine Tables (created via raw SQL migration 004) --------
+
+model UserCategoryInterest {
+  userId             String   @map("user_id")
+  categoryId         String   @map("category_id")
+  interestScore      Float    @default(0) @map("interest_score")
+  viewCount          Int      @default(0) @map("view_count")
+  clickCount         Int      @default(0) @map("click_count")
+  purchaseCount      Int      @default(0) @map("purchase_count")
+  shareCount         Int      @default(0) @map("share_count")
+  favoriteCount      Int      @default(0) @map("favorite_count")
+  cartAddCount       Int      @default(0) @map("cart_add_count")
+  reviewCount        Int      @default(0) @map("review_count")
+  orderCompletedCount Int     @default(0) @map("order_completed_count")
+  recencyWeight      Float    @default(1.0) @map("recency_weight")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  @@id([userId, categoryId])
+  @@index([userId, interestScore(sort: Desc)])
+  @@map("user_category_interest")
+}
+
+model ProductScore {
+  productId        String   @id @map("product_id")
+  totalViews       Int      @default(0) @map("total_views")
+  totalClicks      Int      @default(0) @map("total_clicks")
+  totalPurchases   Int      @default(0) @map("total_purchases")
+  totalShares      Int      @default(0) @map("total_shares")
+  totalFavorites   Int      @default(0) @map("total_favorites")
+  dailyViews       Int      @default(0) @map("daily_views")
+  weeklyViews      Int      @default(0) @map("weekly_views")
+  monthlyViews     Int      @default(0) @map("monthly_views")
+  dailyPurchases   Int      @default(0) @map("daily_purchases")
+  weeklyPurchases  Int      @default(0) @map("weekly_purchases")
+  monthlyPurchases Int      @default(0) @map("monthly_purchases")
+  trendingScore    Float    @default(0) @map("trending_score")
+  recencyScore     Float    @default(0) @map("recency_score")
+  updatedAt        DateTime @default(now()) @map("updated_at")
+
+  @@index([trendingScore(sort: Desc)])
+  @@index([totalViews(sort: Desc)])
+  @@map("product_scores")
+}
+
+model ShareEvent {
+  id               String   @id @default(uuid())
+  productId        String   @map("product_id")
+  senderUserId     String?  @map("sender_user_id")
+  recipientUserId  String?  @map("recipient_user_id")
+  clicked          Boolean  @default(false)
+  purchased        Boolean  @default(false)
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([productId])
+  @@index([recipientUserId])
+  @@index([createdAt(sort: Desc)])
+  @@map("share_events")
+}
+
+model Notification {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  title         String
+  body          String
+  type          String
+  referenceId   String?   @map("reference_id")
+  referenceType String?   @map("reference_type")
+  isRead        Boolean   @default(false) @map("is_read")
+  sentAt        DateTime? @map("sent_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@map("notifications")
+}

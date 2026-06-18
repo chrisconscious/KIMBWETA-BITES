@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FFFFFF">
+<title>KIMBWETA BITES &mdash; Campus Delivery</title>
+<meta name="description" content="Fast campus snack and item delivery across Tanzania universities">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="src/styles/variables.css?v=20260605">
+<link rel="stylesheet" href="src/styles/main.css?v=20260605">
+<link rel="stylesheet" href="src/styles/layout.css?v=20260605">
+<link rel="stylesheet" href="src/styles/components.css?v=20260605">
+<style>
+#pl{position:fixed;inset:0;z-index:10000;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:'DM Sans',system-ui,sans-serif}
+#pl-stage{text-align:center;position:relative;z-index:2}
+#pl-logo-wrap{position:relative;width:clamp(200px,38vw,300px);height:clamp(200px,38vw,300px);margin:0 auto;overflow:hidden;will-change:transform}
+.pl-layer{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none;will-change:transform,clip-path}
+.pl-layer img{width:100%;height:100%;object-fit:contain;display:block;backface-visibility:hidden}
+/* ── Phase 2: Foundation rises from below (z-index:2 on top) ── */
+#pl-table-layer{z-index:2;clip-path:inset(69% 0 0 0);transform:translateY(100%);will-change:transform}
+#pl-table-layer.in{transform:translateY(0);transition:transform .45s cubic-bezier(.16,1,.3,1)}
+/* ── Phase 3: Burgers emerge upward from behind foundation (z-index:1 behind) ── */
+#pl-burger-l-layer{z-index:1;clip-path:inset(100% 50% 0 0);will-change:clip-path}
+#pl-burger-l-layer.in{clip-path:inset(0 50% 30% 0);transition:clip-path .35s cubic-bezier(.16,1,.3,1)}
+#pl-burger-r-layer{z-index:1;clip-path:inset(100% 0 0 50%);will-change:clip-path}
+#pl-burger-r-layer.in{clip-path:inset(0 0 30% 50%);transition:clip-path .35s cubic-bezier(.16,1,.3,1)}
+/* ── Phase 6: White ambient glow pulse behind logo ── */
+#pl-glow{position:absolute;top:50%;left:50%;width:50vmin;height:50vmin;transform:translate(-50%,-50%) scale(.5);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.12) 0%,transparent 60%);opacity:0;pointer-events:none;z-index:0;will-change:transform,opacity}
+@keyframes plGlowPulse{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}30%{opacity:1;transform:translate(-50%,-50%) scale(1)}60%{opacity:.7;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.3)}}
+#pl-glow.active{animation:plGlowPulse 1s cubic-bezier(.4,0,.2,1) forwards}
+/* ── Phase 7: Premium pop emphasis 100%→104%→100% ── */
+@keyframes plPop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+#pl-logo-wrap.pop{animation:plPop .5s cubic-bezier(.4,0,.2,1) forwards}
+/* ── Text sequences ── */
+#pl-text{font-family:'Syne',system-ui,sans-serif;margin-top:16px;display:flex;flex-direction:column;align-items:center}
+#pl-line-welcome{font-size:clamp(10px,1.1vw,13px);color:#aaa;font-weight:500;letter-spacing:.32em;text-transform:uppercase;margin-bottom:1px}
+#pl-line-welcome .pl-char{display:inline-block;opacity:0;transform:translateY(-4px);transition:opacity .28s cubic-bezier(.4,0,.2,1),transform .28s cubic-bezier(.4,0,.2,1)}
+#pl-line-welcome .pl-char.in{opacity:1;transform:translateY(0)}
+#pl-line-hero{font-size:clamp(22px,4.2vw,40px);font-weight:800;color:#111;letter-spacing:-.02em;line-height:1.12;margin-bottom:14px}
+#pl-line-hero .pl-char{display:inline-block;opacity:0;transform:translateY(-8px) scale(.94);filter:blur(5px);transition:opacity .35s cubic-bezier(.4,0,.2,1),transform .38s cubic-bezier(.34,1.56,.64,1),filter .35s cubic-bezier(.4,0,.2,1)}
+#pl-line-hero .pl-char.in{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+#pl-line-hero .pl-char.accent{color:#b81804}
+#pl-line-community{font-size:clamp(13px,1.6vw,17px);color:#444;font-weight:500;line-height:1.45;margin-bottom:3px;opacity:0;transform:translateY(4px);transition:opacity .35s ease,transform .35s ease}
+#pl-line-community.in{opacity:1;transform:translateY(0)}
+#pl-line-community .pl-word{display:inline;opacity:0;transition:opacity .28s cubic-bezier(.4,0,.2,1)}
+#pl-line-community .pl-word.in{opacity:1}
+#pl-line-community .pl-word.warm{color:#b81804}
+#pl-seq-4{font-size:clamp(12px,1.4vw,15px);color:#666;font-weight:500;letter-spacing:.02em;margin-bottom:3px}
+.pl-pillar{display:inline-block;opacity:0;transform:scale(.7);transition:opacity .3s cubic-bezier(.34,1.56,.64,1),transform .3s cubic-bezier(.34,1.56,.64,1),letter-spacing .3s ease}
+.pl-pillar.in{opacity:1;transform:scale(1);letter-spacing:.05em}
+.pl-pillar-sep{display:inline-block;opacity:0;margin:0 5px;transition:opacity .2s ease}
+.pl-pillar-sep.in{opacity:1}
+#pl-line-closing{font-size:clamp(12px,1.4vw,16px);color:#b81804;font-weight:500;opacity:0;transform:translateY(12px);transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1)}
+#pl-line-closing.in{opacity:1;transform:translateY(0)}
+/* ── Phase 9: Fade out ── */
+@keyframes plFadeOut{0%{opacity:1}to{opacity:0;pointer-events:none}}
+#pl.out{animation:plFadeOut .4s ease forwards;pointer-events:none}
+@media(max-width:600px){#pl-logo-wrap{width:clamp(150px,52vw,210px);height:clamp(150px,52vw,210px)}#pl-line-hero{font-size:clamp(18px,5.5vw,26px)}#pl-seq-4 .pl-pillar-sep{margin:0 3px}}
+</style>
+</head>
+<body>
+
+<div id="pl" style="opacity:1">
+  <div id="pl-stage">
+    <div id="pl-logo-wrap">
+      <div id="pl-glow"></div>
+      <div class="pl-layer" id="pl-table-layer">
+        <img id="pl-img-t" alt="Kimbweta Bites">
+      </div>
+      <div class="pl-layer" id="pl-burger-l-layer">
+        <img id="pl-img-l" alt="">
+      </div>
+      <div class="pl-layer" id="pl-burger-r-layer">
+        <img id="pl-img-r" alt="">
+      </div>
+    </div>
+    <div id="pl-text">
+      <div id="pl-line-welcome"></div>
+      <div id="pl-line-hero"></div>
+      <div id="pl-line-community"></div>
+      <div id="pl-seq-4">
+        <span class="pl-pillar" data-i="0">Order.</span>
+        <span class="pl-pillar-sep">•</span>
+        <span class="pl-pillar" data-i="1">Share.</span>
+        <span class="pl-pillar-sep">•</span>
+        <span class="pl-pillar" data-i="2">Discover.</span>
+      </div>
+      <div id="pl-line-closing"></div>
+    </div>
+  </div>
+</div>
+
+<div class="page-loading" id="pageLoader" style="display:none">
+  <div class="page-loading-logo">K</div>
+  <div class="page-loading-bar"><div class="page-loading-fill"></div></div>
+  <div style="font-size:12px;color:var(--text3);font-family:var(--ff-display);font-weight:600;letter-spacing:.06em">KIMBWETA BITES</div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-header">
+    <div>
+      <div class="h3">Your Cart</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:2px" id="cartItemCount">0 items</div>
+    </div>
+    <button class="modal-close" onclick="closeAll()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-footer" id="cartFooter"></div>
+</div>
+
+<div class="modal-bg" id="quickViewModal">
+  <div class="modal" id="quickViewContent"></div>
+</div>
+<div class="modal-bg" id="authModal">
+  <div class="modal" id="authContent"></div>
+</div>
+<div class="modal-bg" id="checkoutModal">
+  <div class="modal modal-lg" id="checkoutContent"></div>
+</div>
+
+<div class="float-cart" id="floatCart" onclick="openCart()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+  <span id="floatCartText">View Cart</span>
+  <span style="background:rgba(255,255,255,.2);padding:4px 14px;border-radius:99px;font-size:13px;font-weight:600" id="floatCartPrice">TZS 0</span>
+</div>
+
+<div class="sticky-cart" id="stickyCart" onclick="openCart()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+  <div style="flex:1">
+    <div class="sticky-cart-count" id="stickyCartCount">0 items</div>
+    <div class="sticky-cart-total" id="stickyCartTotal">TZS 0</div>
+  </div>
+  <button class="btn btn-primary btn-sm">View Cart</button>
+</div>
+
+<div class="fab-wrap" id="fabWrap">
+  <div class="fab-menu" id="fabMenu">
+    <div class="fab-item" onclick="FAB.action('email')" title="Email"><span class="fab-item-tip">Email</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
+    <div class="fab-item" onclick="FAB.action('call')" title="Call"><span class="fab-item-tip">Call Us</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.69 19a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.88 4.18 2 2 0 0 1 4.87 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.91 9.6a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+    <div class="fab-item" onclick="FAB.action('facebook')" title="Facebook"><span class="fab-item-tip">Facebook</span><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></div>
+    <div class="fab-item" onclick="FAB.action('whatsapp')" title="WhatsApp"><span class="fab-item-tip">WhatsApp</span><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2.003c-5.514 0-9.997 4.482-9.997 9.995 0 1.763.463 3.419 1.272 4.862L2 22l5.272-1.381A9.953 9.953 0 0 0 12 21.997c5.514 0 9.997-4.483 9.997-9.998 0-5.514-4.483-9.997-9.997-9.997zm0 18.34a8.317 8.317 0 0 1-4.247-1.161l-.305-.18-3.13.82.834-3.046-.199-.313A8.314 8.314 0 0 1 3.687 12c0-4.593 3.739-8.332 8.332-8.332 4.594 0 8.332 3.739 8.332 8.332 0 4.593-3.738 8.343-8.332 8.343z"/></svg></div>
+    <div class="fab-item" onclick="FAB.action('instagram')" title="Instagram"><span class="fab-item-tip">Instagram</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg></div>
+    <div class="fab-item" onclick="FAB.action('tiktok')" title="TikTok"><span class="fab-item-tip">TikTok</span><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.3 6.3 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.3a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V9.29a8.26 8.26 0 0 0 4.86 1.56V7.43a4.85 4.85 0 0 1-1.1-.74z"/></svg></div>
+  </div>
+  <div style="position:relative">
+    <div class="fab-main" id="fabMain" onclick="FAB.toggle()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="fab-tooltip" id="fabTooltip" style="opacity:0;transition:opacity .3s">Follow us</div>
+  </div>
+</div>
+
+<div id="app">
+
+  <div class="view active" id="view-home">
+    <nav class="navbar">
+      <div class="nav-logo" onclick="Router.navigate('/')">
+        <div class="nav-logo-icon" id="siteLogoIcon">K</div>
+        <img id="siteLogoImg" style="display:none;height:48px;width:auto;max-width:180px;object-fit:contain" alt="Logo">
+        <span class="nav-logo-text" id="siteLogoText">KIMBWETA <span class="grad-text">BITES</span></span>
+      </div>
+      <div class="nav-search" style="position:relative">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text3)"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search snacks, drinks, meals..." id="searchInput" oninput="Search.handle(this.value)" onblur="setTimeout(()=>Search.close(),200)">
+        <div class="search-dropdown" id="searchDropdown"></div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="Router.navigate('/products')">Browse</button>
+        <button class="btn btn-ghost btn-sm" onclick="Router.navigate('/discover')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76 14 14l-6.24 2.24L10 10l6.24-2.24z"/></svg>
+          Discover
+        </button>
+        <div id="userNavBtn"><button class="btn btn-primary btn-sm" onclick="Auth.showLogin()" type="button" id="fallbackSignIn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg> Sign In</button></div>
+        <div class="cart-btn" onclick="openCart()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <div class="cart-count" id="navCartCount" style="display:none">0</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="ads-slider" id="adsSlider">
+      <div class="slides-wrap" id="slidesWrap"></div>
+      <button class="slider-nav slider-prev" onclick="prevSlide()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="slider-nav slider-next" onclick="nextSlide()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg></button>
+      <div class="slider-dots" id="sliderDots"></div>
+    </div>
+
+    <div class="ad-banner-wrap" id="adBannerSection" style="display:none"></div>
+
+    <div class="ad-floating-card" id="adFloatingCard" style="display:none"></div>
+
+    <div class="categories-section">
+      <div class="section-header"><span class="h3">Categories</span><span class="see-all" onclick="Router.navigate('/products')">See all
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span></div>
+      <div class="cats-scroll" id="catsScroll"></div>
+    </div>
+
+    <div id="recentlyViewed" style="display:none;padding:20px 24px 0">
+      <div class="section-header" style="margin-bottom:12px"><span class="h3">Recently Viewed</span><span class="see-all" onclick="RecentlyViewed.clear()">Clear</span></div>
+      <div class="recent-scroll" id="recentScroll"></div>
+    </div>
+
+    <div class="products-section">
+      <div class="section-header">
+        <span class="h3">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="color:var(--brand);display:inline;margin-right:6px;vertical-align:middle"><path d="M12 2c0 6-4 8-4 14a4 4 0 0 0 8 0c0-6-4-8-4-14z"/></svg>
+          Trending Now
+        </span>
+        <span class="see-all" onclick="Router.navigate('/products')">View all
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </span>
+      </div>
+      <div class="products-grid stagger-in" id="homeProductGrid"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-products">
+    <nav class="navbar">
+      <div class="nav-logo" onclick="Router.navigate('/')"><div class="nav-logo-icon" id="siteLogoIcon2">K</div><img id="siteLogoImg2" style="display:none;height:48px;width:auto;max-width:180px;object-fit:contain" alt="Logo"><span class="nav-logo-text" id="siteLogoText2">KIMBWETA <span class="grad-text">BITES</span></span></div>
+      <div class="nav-search" style="position:relative">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--text3)"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search products..." oninput="Search.handle(this.value)" onblur="setTimeout(()=>Search.close(),200)">
+        <div class="search-dropdown" id="searchDropdown2"></div>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="Router.navigate('/')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          Home
+        </button>
+        <div id="userNavBtn2"><button class="btn btn-primary btn-sm" onclick="Auth.showLogin()" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg> Sign In</button></div>
+        <div class="cart-btn" onclick="openCart()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <div class="cart-count" id="navCartCount2" style="display:none">0</div>
+        </div>
+      </div>
+    </nav>
+    <div class="page-hero"><div class="h2">All Products</div><p>Fresh, fast delivery to your campus &mdash; browse everything available</p></div>
+    <div style="padding:0 24px 32px">
+      <div class="cats-scroll" style="margin-bottom:20px" id="catsScroll2"></div>
+      <div class="products-grid stagger-in" id="allProductGrid"></div>
+      <div style="text-align:center;margin-top:24px">
+        <button class="btn btn-ghost btn-sm" onclick="var u=Session.get();if(!u){Auth.showLogin();return;}ProductRequest.show()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+          Can't find what you're looking for? Request a Product
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-tracking">
+    <nav class="navbar">
+      <div class="nav-logo" onclick="Router.navigate('/')"><div class="nav-logo-icon" id="siteLogoIcon3">K</div><img id="siteLogoImg3" style="display:none;height:48px;width:auto;max-width:180px;object-fit:contain" alt="Logo"><span class="nav-logo-text" id="siteLogoText3">KIMBWETA <span class="grad-text">BITES</span></span></div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="Router.navigate('/')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          Back
+        </button>
+      </div>
+    </nav>
+    <div style="max-width:600px;margin:0 auto;padding:32px 24px">
+      <div style="margin-bottom:28px">
+        <div class="label" style="margin-bottom:8px" id="trackOrderNum">Track Order</div>
+        <div class="h2">Track Your Order</div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px;color:var(--text2);font-size:14px">
+          <span class="dot" style="animation:pulseGlow 1.5s infinite"></span>
+          Live tracking active
+        </div>
+      </div>
+      <div id="trackingContent"><div class="loading-state">Loading order status...</div></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-discovery">
+    <nav class="navbar">
+      <div class="nav-logo" onclick="Router.navigate('/')"><div class="nav-logo-icon" id="siteLogoIcon4">K</div><img id="siteLogoImg4" style="display:none;height:48px;width:auto;max-width:180px;object-fit:contain" alt="Logo"><span class="nav-logo-text" id="siteLogoText4">KIMBWETA <span class="grad-text">BITES</span></span></div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="Router.navigate('/')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          Home
+        </button>
+        <div id="userNavBtnDiscovery"></div>
+      </div>
+    </nav>
+    <div id="discoveryContent"></div>
+  </div>
+
+  <!-- Account Center -->
+  <div class="view" id="view-account">
+    <nav class="navbar">
+      <div class="nav-logo" onclick="Router.navigate('/')"><div class="nav-logo-icon" id="siteLogoIcon5">K</div><img id="siteLogoImg5" style="display:none;height:48px;width:auto;max-width:180px;object-fit:contain" alt="Logo"><span class="nav-logo-text" id="siteLogoText5">KIMBWETA <span class="grad-text">BITES</span></span></div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="Router.navigate('/')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          Home
+        </button>
+      </div>
+    </nav>
+    <div style="padding:24px;max-width:800px;margin:0 auto" id="accountContent"></div>
+  </div>
+
+  <!-- Generic modal for share / feedback / product request -->
+  <div class="modal-overlay" id="genericModal" style="display:none">
+    <div class="modal-content" id="modalContent" style="max-width:500px;margin:40px auto;background:var(--surface);border-radius:20px;border:1px solid var(--border);box-shadow:0 25px 80px rgba(0,0,0,.25);position:relative;overflow-y:auto;max-height:90vh"></div>
+  </div>
+
+</div>
+
+<script defer src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script defer src="src/bundle.js?v=20260611b"></script>
+
+<script>
+(function() {
+  var $ = function(id) { return document.getElementById(id); };
+  var a = function(el, cls) { if (el) el.classList.add(cls); };
+  var q = function(s) { return document.querySelectorAll(s); };
+
+  var pl = $('pl'), logoWrap = $('pl-logo-wrap'), glow = $('pl-glow');
+  var tableLayer = $('pl-table-layer'), burgerL = $('pl-burger-l-layer'), burgerR = $('pl-burger-r-layer');
+  var elWelcome = $('pl-line-welcome'), elHero = $('pl-line-hero'), elClosing = $('pl-line-closing');
+
+  var fallback = '/uploads/settings/logo-1780622766404.png';
+  var revealed = false;
+  var preloaderSettings = {};
+  var plLogoSrc = '';
+
+  var setSrc = function(u) {
+    [tableLayer, burgerL, burgerR].forEach(function(l) {
+      var imgs = l.getElementsByTagName('img');
+      if (imgs.length) imgs[0].src = u;
+    });
+  };
+
+  var splitChars = function(el, text, opts) {
+    opts = opts || {};
+    var stagger = opts.stagger || 35;
+    var accentStart = opts.accentStart || -1;
+    var accentEnd = opts.accentEnd || -1;
+    el.innerHTML = '';
+    for (var i = 0; i < text.length; i++) {
+      var s = document.createElement('span');
+      s.className = 'pl-char';
+      s.textContent = text[i] === ' ' ? '\u00A0' : text[i];
+      s.style.transitionDelay = (i * stagger) + 'ms';
+      if (i >= accentStart && i < accentEnd) s.classList.add('accent');
+      el.appendChild(s);
+    }
+  };
+
+  var splitWords = function(el, text, accentIdxs) {
+    el.innerHTML = '';
+    var words = text.split(' ');
+    for (var i = 0; i < words.length; i++) {
+      var s = document.createElement('span');
+      s.className = 'pl-word';
+      s.textContent = words[i];
+      s.style.transitionDelay = (i * 100) + 'ms';
+      if (accentIdxs && accentIdxs.indexOf(i) >= 0) s.classList.add('warm');
+      el.appendChild(s);
+      if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
+    }
+  };
+
+  var reveal = function() {
+    if (revealed) return; revealed = true;
+
+    // Phase 2: Foundation rises from below
+    setTimeout(function() { a(tableLayer, 'in'); }, 120);
+
+    // Phase 3: Both burgers emerge upward from behind the foundation
+    setTimeout(function() { a(burgerL, 'in'); a(burgerR, 'in'); }, 400);
+
+    // Phase 6: White ambient glow pulse behind assembled logo
+    setTimeout(function() { if (glow) a(glow, 'active'); }, 650);
+
+    // Phase 7: Premium pop emphasis (100% → 104% → 100%)
+    setTimeout(function() { a(logoWrap, 'pop'); }, 1050);
+
+    // ─── Text Sequences ───
+    setTimeout(function() {
+      var cs = q('#pl-line-welcome .pl-char');
+      for (var i = 0; i < cs.length; i++) a(cs[i], 'in');
+    }, 1400);
+    setTimeout(function() {
+      var cs = q('#pl-line-hero .pl-char');
+      for (var i = 0; i < cs.length; i++) a(cs[i], 'in');
+    }, 1550);
+    setTimeout(function() { a($('pl-line-community'), 'in'); }, 1700);
+    setTimeout(function() {
+      var ws = q('#pl-line-community .pl-word');
+      for (var i = 0; i < ws.length; i++) a(ws[i], 'in');
+    }, 1780);
+    setTimeout(function() {
+      var ps = q('.pl-pillar');
+      var ss = q('.pl-pillar-sep');
+      for (var i = 0; i < ps.length; i++) (function(idx) {
+        setTimeout(function() {
+          a(ps[idx], 'in');
+          if (idx > 0 && ss[idx - 1]) a(ss[idx - 1], 'in');
+        }, idx * 160);
+      })(i);
+    }, 1900);
+    setTimeout(function() {
+      if (preloaderSettings.closingEnabled && preloaderSettings.closing) {
+        a($('pl-line-closing'), 'in');
+      }
+    }, 2100);
+
+    // Phase 9: Seamless fade — logo visible while page appears, then fades
+    var fadeDelay = 2800 + (preloaderSettings.duration - 3) * 400;
+    setTimeout(function() {
+      var cs = Date.now();
+      (function ck() {
+        if (window.__KB_READY__ || (Date.now() - cs > 3000)) {
+          a(pl, 'out');
+          setTimeout(function() { if (pl && pl.parentNode) pl.parentNode.removeChild(pl); }, 420);
+        } else { setTimeout(ck, 100); }
+      })();
+    }, fadeDelay);
+  };
+
+  var skipPreloader = function() {
+    if (pl) { pl.style.display = 'none'; if (pl.parentNode) pl.parentNode.removeChild(pl); }
+    window.__KB_READY__ = true;
+  };
+
+  var applySettings = function(d) {
+    var data = d && d.data ? d.data : {};
+    if (data.preloader_enabled === 'false') { skipPreloader(); return; }
+    preloaderSettings = {
+      logo: data.preloader_logo || data.site_logo || '',
+      line1: data.preloader_welcome_line1 || 'WELCOME TO',
+      line2: data.preloader_welcome_line2 || 'KIMBWETA BITES',
+      closing: (data.preloader_tagline_enabled !== 'false' && data.preloader_tagline) ? data.preloader_tagline : '',
+      closingEnabled: data.preloader_tagline_enabled !== 'false',
+      duration: parseInt(data.preloader_duration) || 3,
+    };
+    splitChars(elWelcome, preloaderSettings.line1, { stagger: 30 });
+    var accentS2 = preloaderSettings.line2.toUpperCase().indexOf('BITES');
+    var accentE2 = accentS2 >= 0 ? accentS2 + 5 : -1;
+    splitChars(elHero, preloaderSettings.line2, { stagger: 38, accentStart: accentS2, accentEnd: accentE2 });
+    splitWords($('pl-line-community'), 'Connecting Friends Through Food.', [1]);
+    if (preloaderSettings.closing) {
+      ($('pl-line-closing')).style.display = 'block';
+      ($('pl-line-closing')).textContent = preloaderSettings.closing;
+    } else {
+      ($('pl-line-closing')).style.display = 'none';
+    }
+  };
+
+  var tryReveal = function() {
+    if (revealed) return;
+    reveal();
+  };
+
+  // Preview mode
+  var qp = new URLSearchParams(window.location.search);
+  if (qp.get('preview') === '1') {
+    var pl1 = qp.get('l1') || 'WELCOME TO';
+    var pl2 = qp.get('l2') || 'KIMBWETA BITES';
+    var pt  = qp.get('t') || '';
+    var pd  = parseInt(qp.get('d')) || 3;
+    var plogo = qp.get('l') || '';
+    var accentS = pl2.toUpperCase().indexOf('BITES');
+    var accentE = accentS >= 0 ? accentS + 5 : -1;
+    preloaderSettings = {
+      logo: plogo, line1: pl1, line2: pl2,
+      closing: pt, closingEnabled: !!pt,
+      duration: pd,
+    };
+    splitChars(elWelcome, pl1, { stagger: 30 });
+    splitChars(elHero, pl2, { stagger: 38, accentStart: accentS, accentEnd: accentE });
+    splitWords($('pl-line-community'), 'Connecting Friends Through Food.', [1]);
+    if (pt) { elClosing.style.display = 'block'; elClosing.textContent = pt; }
+    else { elClosing.style.display = 'none'; }
+    if (plogo) { setSrc(plogo); }
+    else { setSrc(fallback); }
+    tryReveal();
+  } else {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/v1/settings/public', true);
+    xhr.onload = function() {
+      try {
+        var d = JSON.parse(xhr.responseText);
+        applySettings(d);
+        var u = preloaderSettings.logo;
+        if (u) {
+          if (u.indexOf('/') === -1 && u.indexOf('://') === -1) u = '/uploads/settings/' + u;
+          setSrc(u);
+        } else { setSrc(fallback); }
+      } catch(e) { setSrc(fallback); }
+      tryReveal();
+    };
+    xhr.onerror = function() { setSrc(fallback); tryReveal(); };
+    xhr.send();
+    setTimeout(function() { if (!revealed) { setSrc(fallback); tryReveal(); } }, 2000);
+  }
+})();
+window.__KB_READY__ = false;
+</script>
+
+<script>
+var ROUTES = {
+  '/':         { view: 'home',     guard: null },
+  '/products': { view: 'products', guard: null },
+  '/orders':   { view: 'tracking', guard: null },
+  '/discover': { view: 'discovery', guard: null },
+  '/account':  { view: 'account',  guard: 'auth' },
+};
+
+var Router = {
+  navigate: function(path, skipHistory) {
+    var route = ROUTES[path] || ROUTES['/'];
+    // Handle auth guard
+    if (route.guard === 'auth' && !Session.isLoggedIn()) {
+      if (!skipHistory) window.history.pushState({ path: '/' }, '', '#/');
+      Auth.showLogin();
+      return;
+    }
+    if (!skipHistory) window.history.pushState({ path }, '', '#' + path);
+    var views = document.querySelectorAll('.view');
+    for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+    var viewEl = document.getElementById('view-' + route.view);
+    if (viewEl) { viewEl.classList.add('active'); window.scrollTo(0, 0); }
+    document.querySelectorAll('.user-dropdown').forEach(function(d) { d.classList.remove('open'); });
+    if (route.view === 'tracking' && typeof Tracking !== 'undefined') Tracking.load();
+    if (route.view === 'discovery' && typeof DiscoveryFeed !== 'undefined') DiscoveryFeed.load();
+    if (route.view === 'account' && typeof AccountCenter !== 'undefined') AccountCenter.init();
+  },
+  handleChange: function() {
+    var path = window.location.hash.slice(1) || '/';
+    Router.navigate(path, true);
+  },
+  init: function() {
+    window.addEventListener('hashchange', Router.handleChange);
+    Router.handleChange();
+  },
+};
+
+function openCart() {
+  document.getElementById('cartDrawer').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  document.body.classList.add('no-scroll');
+  Cart.renderDrawer();
+}
+
+function openModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('genericModal').style.display = 'flex';
+  document.getElementById('overlay').classList.add('open');
+  document.body.classList.add('no-scroll');
+}
+
+function closeAll() {
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('quickViewModal').classList.remove('open');
+  document.getElementById('authModal').classList.remove('active');
+  document.getElementById('checkoutModal').classList.remove('open');
+  document.getElementById('genericModal').style.display = 'none';
+  document.body.classList.remove('no-scroll');
+  document.querySelectorAll('.user-dropdown').forEach(function(d) { d.classList.remove('open'); });
+  if (typeof FAB !== 'undefined') FAB.close();
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.user-dropdown')) {
+    document.querySelectorAll('.user-dropdown').forEach(function(d) { d.classList.remove('open'); });
+  }
+});
+
+function applySiteLogo(url) {
+  function apply(imgId, iconId) {
+    var img = document.getElementById(imgId);
+    var icon = document.getElementById(iconId);
+    if (!img) return;
+    if (url) {
+      var src = url;
+      if (src.indexOf('://') === -1) {
+        if (src.indexOf('/') !== 0) src = '/uploads/settings/' + src;
+        src = (KB.API_BASE.replace('/api/v1','')) + src;
+      }
+      img.src = src;
+      img.style.display = 'block';
+      if (icon) icon.style.display = 'none';
+    } else {
+      img.style.display = 'none';
+      if (icon) icon.style.display = 'flex';
+    }
+  }
+  apply('siteLogoImg', 'siteLogoIcon');
+  apply('siteLogoImg2', 'siteLogoIcon2');
+  apply('siteLogoImg3', 'siteLogoIcon3');
+  apply('siteLogoImg4', 'siteLogoIcon4');
+  apply('siteLogoImg5', 'siteLogoIcon5');
+}
+
+async function loadSiteLogo() {
+  try {
+    var data = await API.getSettings();
+    if (data && data.data) applySiteLogo(data.data.site_logo || '');
+  } catch {}
+}
+
+function boot() {
+  try {
+    var user = Session.get();
+    
+    Router.init();
+    RecentlyViewed.render();
+
+    Promise.allSettled([
+      Categories.fetch(),
+      Products.fetch(user ? user.campusId || null : null),
+      loadSiteLogo(),
+    ]).then(function() { window.__KB_READY__ = true; });
+    
+    restoreSession().catch(function() {});
+    AdsSlider.init(user ? user.campusId || null : null).catch(function() {});
+    if (typeof FAB !== 'undefined') FAB.init().catch(function() {});
+
+  } catch (err) {
+    console.error('Boot error:', err);
+    document.getElementById('view-home')?.classList.add('active');
+    Router.init();
+    window.__KB_READY__ = true;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
