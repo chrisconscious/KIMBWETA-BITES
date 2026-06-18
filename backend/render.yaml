@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: kimbweta-api
+    runtime: node
+    repo: https://github.com/chrisconscious/KIMBWETA-BITES
+    branch: main
+    rootDir: backend
+    buildCommand: npm install && npm run build && npx prisma generate
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: API_PREFIX
+        value: /api/v1
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGINS
+        value: https://kimbweta-bites.vercel.app,https://kimbweta-bites.onrender.com
+      - key: OTP_MOCK_MODE
+        value: "true"
+      - key: SMS_PROVIDER
+        value: console
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: "500"
+      - key: MAX_FILE_SIZE_MB
+        value: "5"
+      - key: LOG_LEVEL
+        value: info

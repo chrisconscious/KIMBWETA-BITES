@@ -251,3 +251,46 @@ PORT=3001
 # Change KB.API_BASE in frontend/src/config/constants.js
 API_BASE: 'http://localhost:3001/api/v1'
 ```
+
+---
+
+## Deployment
+
+### Backend — Render (Web Service)
+1. Push this repo to GitHub
+2. Go to [render.com](https://render.com) → **New Web Service** → connect your repo
+3. Fill:
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install && npm run build && npx prisma generate`
+   - **Start Command**: `npm start`
+4. Add environment variables (all from `.env`):
+   - `DATABASE_URL` — from [neon.tech](https://neon.tech) (free PostgreSQL)
+   - `JWT_SECRET`, `JWT_REFRESH_SECRET` — random 64-char hex strings
+   - `CORS_ORIGINS` — include your Vercel frontend URL
+   - `NODE_ENV=production`
+5. Deploy — you'll get a URL like `https://kimbweta-api.onrender.com`
+
+### Frontend — Vercel
+1. On [vercel.com](https://vercel.com) → **Add New Project** → connect same repo
+2. **Root Directory**: `frontend`
+3. **Build**: leave default (static)
+4. Before deploying, set the API URL in `frontend/index.html`:
+   ```html
+   <script>window.KIMBWETA_API = 'https://kimbweta-api.onrender.com/api/v1';</script>
+   ```
+5. Deploy — your site is live at `https://kimbweta-bites.vercel.app`
+
+### Alternative — Railway (all-in-one)
+1. Create project on [railway.com](https://railway.com)
+2. Connect GitHub repo, root dir: `backend`
+3. Add PostgreSQL plugin (auto-injects `DATABASE_URL`)
+4. Add env vars; set start: `npm run build && npx prisma generate && npm start`
+
+### Database — Neon (free PostgreSQL)
+1. Sign up at [neon.tech](https://neon.tech) (free tier: 500 MB)
+2. Create a database, copy the connection string
+3. Paste it as `DATABASE_URL` in your Render/Railway environment variables
+4. Backup your local DB and restore to Neon, or let Prisma create tables:
+   ```bash
+   npx prisma db push
+   ```
