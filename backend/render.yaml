@@ -26,7 +26,7 @@ services:
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
       - key: CORS_ORIGINS
-        value: https://kimbweta-bites.vercel.app,https://kimbweta-bites.onrender.com
+        sync: false
       - key: OTP_MOCK_MODE
         value: "true"
       - key: SMS_PROVIDER
