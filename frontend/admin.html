@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="src/styles/main.css?v=20260605">
 <link rel="stylesheet" href="src/styles/layout.css?v=20260605">
 <link rel="stylesheet" href="src/styles/components.css?v=20260605">
+<link rel="stylesheet" href="src/styles/responsive.css?v=20260605">
 </head>
 <body>
 
@@ -69,9 +70,14 @@
   <!-- ── Main Content ─────────────────────────────────────── -->
   <div class="admin-main">
     <div class="admin-header">
-      <div>
-        <div class="h2" id="adminGreeting">Dashboard</div>
-        <div style="font-size:14px;color:var(--text2);margin-top:4px"><span class="dot"></span> <span id="adminCampusLabel">Loading...</span></div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div>
+          <div class="h2" id="adminGreeting">Dashboard</div>
+          <div style="font-size:14px;color:var(--text2);margin-top:4px"><span class="dot"></span> <span id="adminCampusLabel">Loading...</span></div>
+        </div>
       </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost btn-sm" onclick="refreshAll()">
@@ -185,6 +191,7 @@ function logout() {
 function closeModal() {
   document.getElementById('productModal').classList.remove('active');
   document.getElementById('overlay').classList.remove('open');
+  document.getElementById('sidebar').classList.remove('open');
   document.body.classList.remove('no-scroll');
 }
 
@@ -193,6 +200,12 @@ function openModal(html) {
   document.getElementById('productModal').classList.add('active');
   document.getElementById('overlay').classList.add('open');
   document.body.classList.add('no-scroll');
+}
+
+// ── Sidebar Toggle ──────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
 }
 
 // ── Tab Navigation ──────────────────────────────────────────────

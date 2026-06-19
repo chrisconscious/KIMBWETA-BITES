@@ -825,7 +825,7 @@
 }
 
 @media (max-width: 768px) {
-  .sidebar { position: fixed; left: -240px; z-index: 200; transition: left .3s; }
+  .sidebar { position: fixed; left: -240px; z-index: 200; transition: left .3s; box-shadow: var(--shadow-xl); }
   .sidebar.open { left: 0; }
   .admin-main { padding: 16px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }

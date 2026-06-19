@@ -3378,3 +3378,20 @@ const FAB = {
 document.addEventListener('click', (e) => {
   if (FAB.open && !e.target.closest('#fabWrap')) FAB.toggle();
 });
+
+// Mobile search toggle
+function toggleSearch() {
+  var active = document.querySelector('.view.active .nav-search');
+  if (active) {
+    active.classList.toggle('visible');
+    if (active.classList.contains('visible')) {
+      setTimeout(function() { active.querySelector('input')?.focus(); }, 100);
+    }
+  }
+}
+// Close search on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.nav-search') && !e.target.closest('.search-toggle-btn')) {
+    document.querySelectorAll('.nav-search.visible').forEach(function(el) { el.classList.remove('visible'); });
+  }
+});
