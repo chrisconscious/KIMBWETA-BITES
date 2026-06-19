@@ -96,6 +96,9 @@ export function createApp(): Application {
 
   const uploadsBase = path.isAbsolute(env.UPLOAD_DIR) ? env.UPLOAD_DIR : path.resolve(process.cwd(), env.UPLOAD_DIR);
 
+  fs.mkdirSync(uploadsBase, { recursive: true });
+  ['settings', 'categories', 'ads', 'products'].forEach(sub => fs.mkdirSync(path.join(uploadsBase, sub), { recursive: true }));
+
   app.use('/uploads', express.static(uploadsBase));
 
   app.use(rateLimit({

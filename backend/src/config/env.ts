@@ -11,7 +11,7 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET:      z.string().min(32),
   JWT_REFRESH_EXPIRES_IN:  z.string().default('7d'),
   REDIS_URL:               z.string().optional(),
-  CORS_ORIGINS:            z.string().default('http://localhost:3001,http://localhost:5500,http://localhost:8000,http://127.0.0.1:5500,http://127.0.0.1:3001'),
+  CORS_ORIGINS:            z.string().default('http://localhost:3001,http://localhost:5500,http://localhost:8000,http://127.0.0.1:5500,http://127.0.0.1:3001,https://kimbweta-bites.vercel.app'),
   RATE_LIMIT_WINDOW_MS:    z.coerce.number().default(900000),
   RATE_LIMIT_MAX_REQUESTS: z.coerce.number().default(500),
   OTP_RATE_LIMIT_MAX:      z.coerce.number().default(10),

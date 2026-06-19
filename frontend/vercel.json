@@ -3,12 +3,27 @@
   "buildCommand": null,
   "outputDirectory": ".",
   "routes": [
+    { "src": "/super-admin.html", "dest": "/super-admin.html" },
+    { "src": "/admin.html", "dest": "/admin.html" },
+    { "src": "/uploads/(.*)", "dest": "https://kimbweta-bites.onrender.com/uploads/$1" },
     { "src": "/src/(.*)", "dest": "/src/$1" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
   "headers": [
     {
       "source": "/src/styles/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/src/scripts/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/src/config/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]

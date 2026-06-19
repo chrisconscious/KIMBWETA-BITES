@@ -489,15 +489,17 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
     else { setSrc(fallback); }
     tryReveal();
   } else {
+    var apiBase = window.KIMBWETA_API || 'https://kimbweta-bites.onrender.com/api/v1';
+    var renderBase = apiBase.replace('/api/v1', '');
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/api/v1/settings/public', true);
+    xhr.open('GET', apiBase + '/settings/public', true);
     xhr.onload = function() {
       try {
         var d = JSON.parse(xhr.responseText);
         applySettings(d);
         var u = preloaderSettings.logo;
         if (u) {
-          if (u.indexOf('/') === -1 && u.indexOf('://') === -1) u = '/uploads/settings/' + u;
+          if (u.indexOf('://') === -1) u = renderBase + (u.indexOf('/') === 0 ? '' : '/uploads/settings/') + u;
           setSrc(u);
         } else { setSrc(fallback); }
       } catch(e) { setSrc(fallback); }
