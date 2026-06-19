@@ -344,13 +344,16 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
   var kbLogoDataUri = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="30" fill="#f8f4f0"/><text x="100" y="115" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="72" font-weight="900" fill="#c73b1e">KB</text><circle cx="160" cy="45" r="28" fill="#c73b1e" opacity="0.15"/></svg>');
   var fallback = kbLogoDataUri;
   var revealed = false;
-  var preloaderSettings = {};
+  var preloaderSettings = {logo:'',line1:'WELCOME TO',line2:'KIMBWETA BITES',closing:'',closingEnabled:true,duration:3};
   var plLogoSrc = '';
 
-  var setSrc = function(u) {
+  var setSrc = function(u, fallbackTo) {
     [tableLayer, burgerL, burgerR].forEach(function(l) {
       var imgs = l.getElementsByTagName('img');
-      if (imgs.length) imgs[0].src = u;
+      if (imgs.length) {
+        imgs[0].onerror = function() { this.onerror = null; this.src = fallbackTo || fallback; };
+        imgs[0].src = u;
+      }
     });
   };
 
@@ -429,15 +432,30 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
       }
     }, 2100);
 
-    // Phase 9: Seamless fade — logo visible while page appears, then fades
-    var fadeDelay = 2800 + (preloaderSettings.duration - 3) * 400;
+    // Phase 9: After animation, show connecting text and wait for data
+    setTimeout(function() {
+      var $c = $('pl-line-closing');
+      if ($c) { $c.textContent = 'Connecting to campus\u2026'; $c.style.display = 'block'; a($c, 'in'); }
+    }, 2600);
+
+    // Phase 10: Fade — wait for data with generous timeout
+    var dur = Math.max(preloaderSettings.duration || 3, 2);
+    var fadeDelay = 2800 + (dur - 3) * 400;
     setTimeout(function() {
       var cs = Date.now();
+      var MAX_WAIT = 20000;
       (function ck() {
-        if (window.__KB_READY__ || (Date.now() - cs > 3000)) {
+        if (window.__KB_READY__) {
           a(pl, 'out');
           setTimeout(function() { if (pl && pl.parentNode) pl.parentNode.removeChild(pl); }, 420);
-        } else { setTimeout(ck, 100); }
+        } else if (Date.now() - cs > MAX_WAIT) {
+          a(pl, 'out');
+          setTimeout(function() {
+            if (pl && pl.parentNode) pl.parentNode.removeChild(pl);
+            var ld = document.getElementById('pageLoader');
+            if (ld) ld.style.display = 'flex';
+          }, 420);
+        } else { setTimeout(ck, 250); }
       })();
     }, fadeDelay);
   };
@@ -511,7 +529,7 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
         var u = preloaderSettings.logo;
         if (u) {
           if (u.indexOf('://') === -1) u = renderBase + (u.indexOf('/') === 0 ? '' : '/uploads/settings/') + u;
-          setSrc(u);
+          setSrc(u, fallback);
         } else { setSrc(fallback); }
       } catch(e) { setSrc(fallback); }
       tryReveal();
@@ -521,6 +539,19 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
     setTimeout(function() { if (!revealed) { setSrc(fallback); tryReveal(); } }, 2000);
   }
 })();
+
+// Watch for __KB_READY__ to hide pageLoader
+(function() {
+  var ld = document.getElementById('pageLoader');
+  if (!ld) return;
+  var iv = setInterval(function() {
+    if (window.__KB_READY__) {
+      clearInterval(iv);
+      ld.style.display = 'none';
+    }
+  }, 200);
+})();
+
 window.__KB_READY__ = false;
 </script>
 
@@ -605,6 +636,7 @@ function applySiteLogo(url) {
         if (src.indexOf('/') !== 0) src = '/uploads/settings/' + src;
         src = (KB.API_BASE.replace('/api/v1','')) + src;
       }
+      img.onerror = function() { this.onerror = null; this.style.display = 'none'; if (icon) icon.style.display = 'flex'; };
       img.src = src;
       img.style.display = 'block';
       if (icon) icon.style.display = 'none';
@@ -638,7 +670,11 @@ function boot() {
       Categories.fetch(),
       Products.fetch(user ? user.campusId || null : null),
       loadSiteLogo(),
-    ]).then(function() { window.__KB_READY__ = true; });
+    ]).then(function() {
+      window.__KB_READY__ = true;
+      var ld = document.getElementById('pageLoader');
+      if (ld) ld.style.display = 'none';
+    });
     
     restoreSession().catch(function() {});
     AdsSlider.init(user ? user.campusId || null : null).catch(function() {});
