@@ -112,7 +112,7 @@ class DiscoveryService {
   private _eventCountCache = new Map<string, boolean>();
 
   async trackEvents(userId: string | null, events: any[], ipAddress: string) {
-    const results = [];
+    const results: any[] = [];
     const now = new Date();
 
     for (const event of events) {
