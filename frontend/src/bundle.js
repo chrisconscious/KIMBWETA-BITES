@@ -1345,7 +1345,7 @@ var Auth = {
     var password = document.getElementById('loginPassword');
     var errEl = document.getElementById('loginError');
     var btn = document.getElementById('loginBtn');
-    phone = phone ? phone.value.trim() : '';
+    phone = phone ? phone.value.trim().replace(/[\s-]/g, '') : '';
     password = password ? password.value : '';
 
     if (!phone || !password) {
@@ -1429,7 +1429,7 @@ var Auth = {
     var phone = document.getElementById('otpPhone');
     var errEl = document.getElementById('otpSendError');
     var btn = document.getElementById('sendOtpBtn');
-    phone = phone ? phone.value.trim() : '';
+    phone = phone ? phone.value.trim().replace(/[\s-]/g, '') : '';
     if (!phone) { if (errEl) { errEl.textContent = 'Enter your phone number.'; errEl.style.display = 'block'; } return; }
     if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
     try {
@@ -1597,7 +1597,7 @@ var Auth = {
 
     name = name ? name.value.trim() : '';
     campusId = campusId ? campusId.value : '';
-    phone = phone ? phone.value.trim() : '';
+    phone = phone ? phone.value.trim().replace(/[\s-]/g, '') : '';
     password = password ? password.value : '';
 
     if (!name || !campusId || !phone || !password) {

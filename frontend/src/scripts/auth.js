@@ -208,7 +208,7 @@ var Auth = {
     var password = document.getElementById('loginPassword');
     var errEl = document.getElementById('loginError');
     var btn = document.getElementById('loginBtn');
-    phone = phone ? phone.value.trim() : '';
+    phone = phone ? phone.value.trim().replace(/[\s-]/g, '') : '';
     password = password ? password.value : '';
 
     if (!phone || !password) {
@@ -460,7 +460,7 @@ var Auth = {
 
     name = name ? name.value.trim() : '';
     campusId = campusId ? campusId.value : '';
-    phone = phone ? phone.value.trim() : '';
+    phone = phone ? phone.value.trim().replace(/[\s-]/g, '') : '';
     password = password ? password.value : '';
 
     if (!name || !campusId || !phone || !password) {

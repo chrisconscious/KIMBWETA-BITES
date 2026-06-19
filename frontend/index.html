@@ -331,7 +331,8 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
   var tableLayer = $('pl-table-layer'), burgerL = $('pl-burger-l-layer'), burgerR = $('pl-burger-r-layer');
   var elWelcome = $('pl-line-welcome'), elHero = $('pl-line-hero'), elClosing = $('pl-line-closing');
 
-  var fallback = '/uploads/settings/logo-1780622766404.png';
+  var kbLogoDataUri = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="30" fill="#f8f4f0"/><text x="100" y="115" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="72" font-weight="900" fill="#c73b1e">KB</text><circle cx="160" cy="45" r="28" fill="#c73b1e" opacity="0.15"/></svg>');
+  var fallback = kbLogoDataUri;
   var revealed = false;
   var preloaderSettings = {};
   var plLogoSrc = '';
