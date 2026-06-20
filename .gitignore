@@ -42,3 +42,9 @@ backup/
 *.tsbuildinfo
 .next/
 coverage/
+
+# Vercel project config
+.vercel/
+
+# Frontend directory (moved to root)
+frontend/
