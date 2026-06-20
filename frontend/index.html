@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="src/styles/variables.css?v=20260605">
-<link rel="stylesheet" href="src/styles/main.css?v=20260605">
-<link rel="stylesheet" href="src/styles/layout.css?v=20260605">
-<link rel="stylesheet" href="src/styles/components.css?v=20260605">
-<link rel="stylesheet" href="src/styles/responsive.css?v=20260605">
+<link rel="stylesheet" href="src/styles/variables.css?v=20260620">
+<link rel="stylesheet" href="src/styles/main.css?v=20260620">
+<link rel="stylesheet" href="src/styles/layout.css?v=20260620">
+<link rel="stylesheet" href="src/styles/components.css?v=20260620">
+<link rel="stylesheet" href="src/styles/responsive.css?v=20260620">
 <style>
 #pl{position:fixed;inset:0;z-index:10000;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:'DM Sans',system-ui,sans-serif}
 #pl-stage{text-align:center;position:relative;z-index:2}
@@ -329,7 +329,7 @@
 // ── Production API URL — points to Render backend ──────────
 window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
 </script>
-<script defer src="src/bundle.js?v=20260611b"></script>
+<script defer src="src/bundle.js?v=20260620b"></script>
 
 <script>
 (function() {
@@ -341,8 +341,10 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
   var tableLayer = $('pl-table-layer'), burgerL = $('pl-burger-l-layer'), burgerR = $('pl-burger-r-layer');
   var elWelcome = $('pl-line-welcome'), elHero = $('pl-line-hero'), elClosing = $('pl-line-closing');
 
+  var vercelBase = 'https://kimbweta-bites.vercel.app/src/assets';
+  var preloaderSvgUrl = vercelBase + '/preloader-logo.svg';
   var kbLogoDataUri = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="30" fill="#f8f4f0"/><text x="100" y="115" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="72" font-weight="900" fill="#c73b1e">KB</text><circle cx="160" cy="45" r="28" fill="#c73b1e" opacity="0.15"/></svg>');
-  var fallback = kbLogoDataUri;
+  var fallback = preloaderSvgUrl;
   var revealed = false;
   var preloaderSettings = {logo:'',line1:'WELCOME TO',line2:'KIMBWETA BITES',closing:'',closingEnabled:true,duration:3};
   var plLogoSrc = '';
@@ -351,8 +353,12 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
     [tableLayer, burgerL, burgerR].forEach(function(l) {
       var imgs = l.getElementsByTagName('img');
       if (imgs.length) {
-        imgs[0].onerror = function() { this.onerror = null; this.src = fallbackTo || fallback; };
-        imgs[0].src = u;
+        var imgEl = imgs[0];
+        imgEl.onerror = function() {
+          if (this.src === kbLogoDataUri) { this.onerror = null; return; }
+          this.src = kbLogoDataUri;
+        };
+        imgEl.src = u;
       }
     });
   };
@@ -626,24 +632,24 @@ document.addEventListener('click', function(e) {
 });
 
 function applySiteLogo(url) {
+  var vercelSvg = 'https://kimbweta-bites.vercel.app/src/assets/site-logo.svg';
   function apply(imgId, iconId) {
     var img = document.getElementById(imgId);
     var icon = document.getElementById(iconId);
     if (!img) return;
-    if (url) {
-      var src = url;
-      if (src.indexOf('://') === -1) {
-        if (src.indexOf('/') !== 0) src = '/uploads/settings/' + src;
-        src = (KB.API_BASE.replace('/api/v1','')) + src;
-      }
-      img.onerror = function() { this.onerror = null; this.style.display = 'none'; if (icon) icon.style.display = 'flex'; };
-      img.src = src;
-      img.style.display = 'block';
-      if (icon) icon.style.display = 'none';
-    } else {
-      img.style.display = 'none';
-      if (icon) icon.style.display = 'flex';
+    var finalSrc = url || vercelSvg;
+    if (finalSrc.indexOf('://') === -1) {
+      if (finalSrc.indexOf('/') !== 0) finalSrc = '/uploads/settings/' + finalSrc;
+      finalSrc = (KB.API_BASE.replace('/api/v1','')) + finalSrc;
     }
+    img.onerror = function() {
+      this.onerror = function() { this.onerror = null; this.style.display = 'none'; if (icon) icon.style.display = 'flex'; };
+      if (this.src !== vercelSvg) { this.src = vercelSvg; return; }
+      this.style.display = 'none'; if (icon) icon.style.display = 'flex';
+    };
+    img.src = finalSrc;
+    img.style.display = 'block';
+    if (icon) icon.style.display = 'none';
   }
   apply('siteLogoImg', 'siteLogoIcon');
   apply('siteLogoImg2', 'siteLogoIcon2');
@@ -655,8 +661,8 @@ function applySiteLogo(url) {
 async function loadSiteLogo() {
   try {
     var data = await API.getSettings();
-    if (data && data.data) applySiteLogo(data.data.site_logo || '');
-  } catch {}
+    if (data && data.data) applySiteLogo(data.data.site_logo);
+  } catch { applySiteLogo(); }
 }
 
 function boot() {

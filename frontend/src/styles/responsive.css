@@ -21,11 +21,11 @@
 .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 12px; }
 
 .products-grid { grid-template-columns: 1fr; gap: 14px; }
-.product-body { padding: 12px; }
-.product-name { font-size: 14px; }
-.product-desc { display: -webkit-box; -webkit-line-clamp: 1; font-size: 11px; margin-bottom: 6px; }
-.product-price { font-size: 16px; }
-.product-img-placeholder { aspect-ratio: 4/3; }
+.product-body { padding: 12px 14px 14px; }
+.product-name { font-size: 16px; }
+.product-desc { -webkit-line-clamp: 1; font-size: 12px; margin-bottom: 8px; }
+.product-price { font-size: 18px; }
+.product-img-placeholder { aspect-ratio: 3/4; }
 
 .navbar { padding: 0 12px; height: 58px; gap: 8px; }
 .nav-search { display: none; }
@@ -200,10 +200,10 @@
   .nav-actions { gap: 6px; }
   .products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
   .grid-2 { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .product-body { padding: 14px; }
+  .product-body { padding: 12px 14px 14px; }
   .product-name { font-size: 15px; }
   .product-price { font-size: 17px; }
-  .product-desc { -webkit-line-clamp: 2; display: -webkit-box; }
+  .product-desc { -webkit-line-clamp: 2; }
   .slide { height: 250px; }
   .slide-content { padding: 28px 32px; }
   .slide-title { font-size: clamp(24px, 5vw, 32px); max-width: 340px; }
@@ -262,9 +262,9 @@
 
 @media (min-width: 768px) {
   .products-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .product-desc { -webkit-line-clamp: 2; font-size: 12px; }
-  .product-name { font-size: 15px; }
-  .product-price { font-size: 18px; }
+  .product-desc { -webkit-line-clamp: 1; font-size: 13px; }
+  .product-name { font-size: 17px; }
+  .product-price { font-size: 20px; }
   .grid-3 { grid-template-columns: repeat(3, 1fr); }
   .grid-4 { grid-template-columns: repeat(3, 1fr); }
   .slide { height: 320px; }
@@ -282,7 +282,7 @@
 }
 
 @media (min-width: 1024px) {
-  .products-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+  .products-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
   .grid-4 { grid-template-columns: repeat(4, 1fr); }
   .slide { height: 360px; }
   .slide-title { font-size: clamp(28px, 4.5vw, 44px); max-width: 500px; }

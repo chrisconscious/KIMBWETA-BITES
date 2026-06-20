@@ -332,7 +332,8 @@ const API = {
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    var TO = opts && opts.timeout ? opts.timeout : 90000;
+    const timeoutId = setTimeout(() => controller.abort(), TO);
 
     try {
       const resp = await fetch(`${KB.API_BASE}${path}`, {
@@ -813,7 +814,8 @@ function getProductIcon(p) { return ProductIcons[p.icon] || ProductIcons.food; }
 let PRODUCTS = [];
 
 const Products = {
-  async fetch(campusId, categoryId, search) {
+  async fetch(campusId, categoryId, search, retries) {
+    retries = retries || 0;
     Products.renderSkeletons('homeProductGrid');
     Products.renderSkeletons('allProductGrid');
     try {
@@ -822,13 +824,20 @@ const Products = {
         const products = Array.isArray(data.data) ? data.data : (data.data?.data || []);
         if (products.length) {
           PRODUCTS = products.map(mapProduct);
+        } else if (retries < 2) {
+          return new Promise(function(r) { setTimeout(function() { r(Products.fetch(campusId, categoryId, search, retries + 1)); }, 3000); });
         } else {
           PRODUCTS = [];
         }
+      } else if (retries < 2) {
+        return new Promise(function(r) { setTimeout(function() { r(Products.fetch(campusId, categoryId, search, retries + 1)); }, 3000); });
       } else {
         PRODUCTS = [];
       }
     } catch {
+      if (retries < 2) {
+        return new Promise(function(r) { setTimeout(function() { r(Products.fetch(campusId, categoryId, search, retries + 1)); }, 3000); });
+      }
       PRODUCTS = [];
     }
     Products.renderAll();
