@@ -34,7 +34,7 @@ router.post('/campus-admins', async (req, res, next) => {
     const { userId, campusId } = req.body;
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new AppError('User not found', 404);
-    await prisma.user.update({ where: { id: userId }, data: { role: 'admin' } });
+    await prisma.user.update({ where: { id: userId }, data: { role: 'admin', campusId } });
     const assignment = await prisma.campusAdmin.upsert({
       where: { userId_campusId: { userId, campusId } },
       update: { isActive: true, assignedBy: req.user!.id },
