@@ -6,11 +6,11 @@
 <title>Campus Admin — KIMBWETA BITES</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="src/styles/variables.css?v=20260605">
-<link rel="stylesheet" href="src/styles/main.css?v=20260605">
-<link rel="stylesheet" href="src/styles/layout.css?v=20260605">
-<link rel="stylesheet" href="src/styles/components.css?v=20260605">
-<link rel="stylesheet" href="src/styles/responsive.css?v=20260605">
+<link rel="stylesheet" href="src/styles/variables.css?v=20260622a">
+<link rel="stylesheet" href="src/styles/main.css?v=20260622a">
+<link rel="stylesheet" href="src/styles/layout.css?v=20260622a">
+<link rel="stylesheet" href="src/styles/components.css?v=20260622a">
+<link rel="stylesheet" href="src/styles/responsive.css?v=20260622a">
 </head>
 <body>
 
@@ -147,13 +147,13 @@
 
 <!-- ══ SCRIPTS ═══════════════════════════════════════════════ -->
 <script>window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';</script>
-<script defer src="src/config/constants.js?v=20260610"></script>
-<script defer src="src/config/endpoints.js?v=20260610"></script>
-<script defer src="src/utils/storage.js?v=20260610"></script>
-<script defer src="src/utils/helpers.js?v=20260610"></script>
+<script defer src="src/config/constants.js?v=20260622a"></script>
+<script defer src="src/config/endpoints.js?v=20260622a"></script>
+<script defer src="src/utils/storage.js?v=20260622a"></script>
+<script defer src="src/utils/helpers.js?v=20260622a"></script>
 <script defer src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<script defer src="src/scripts/api.js?v=20260610"></script>
-<script defer src="src/components/toast.js?v=20260610"></script>
+<script defer src="src/scripts/api.js?v=20260622a"></script>
+<script defer src="src/components/toast.js?v=20260622a"></script>
 
 <script>
 // ── State ───────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ let categories = [];
 let autoRefreshTimer = null;
 
 // ── Auth Guard ─────────────────────────────────────────────────
-function checkAuth() {
+async function checkAuth() {
   const token = Storage.getStr('kb_token');
   const user  = Storage.get('kb_user');
   const role  = String(user?.role || '').toLowerCase();
@@ -174,9 +174,19 @@ function checkAuth() {
   }
   adminUser = { ...user, role };
   campusId  = user.campusId;
+  if (campusId) return true;
+  // Try fresh fetch — user may have been recently assigned by super admin
+  try {
+    const d = await API.getMe();
+    if (d && d.data) {
+      Storage.set('kb_user', d.data);
+      campusId = d.data.campusId;
+      adminUser = d.data;
+    }
+  } catch (e) {}
   if (!campusId) {
     Toast.show('error','No campus assigned to this account.');
-    setTimeout(() => window.location.href = 'index.html', 2000);
+    setTimeout(function() { window.location.href = 'index.html'; }, 2000);
     return false;
   }
   return true;
@@ -550,8 +560,8 @@ function refreshAll() {
 }
 
 // ── Boot ────────────────────────────────────────────────────────
-function boot() {
-  if (!checkAuth()) return;
+async function boot() {
+  if (!(await checkAuth())) return;
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
