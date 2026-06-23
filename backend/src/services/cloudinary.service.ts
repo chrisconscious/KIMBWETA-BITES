@@ -8,6 +8,15 @@ cloudinary.config({
   api_secret: env.CLOUDINARY_API_SECRET,
 });
 
+function ensureConfigured() {
+  if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
+    throw new Error(
+      'Cloudinary not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, ' +
+      'and CLOUDINARY_API_SECRET in environment variables.'
+    );
+  }
+}
+
 export interface CloudinaryUploadResult {
   url: string;
   secureUrl: string;
@@ -21,6 +30,7 @@ export async function uploadToCloudinary(
   folder: string,
   options?: { publicId?: string; transformation?: any }
 ): Promise<CloudinaryUploadResult> {
+  ensureConfigured();
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -47,6 +57,7 @@ export async function uploadToCloudinary(
 }
 
 export async function deleteFromCloudinary(publicId: string): Promise<void> {
+  ensureConfigured();
   try {
     const result = await cloudinary.uploader.destroy(publicId);
     logger.info({ publicId, result }, 'Cloudinary delete result');
