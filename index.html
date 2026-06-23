@@ -9,30 +9,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="src/styles/variables.css?v=20260620">
-<link rel="stylesheet" href="src/styles/main.css?v=20260620">
-<link rel="stylesheet" href="src/styles/layout.css?v=20260620">
-<link rel="stylesheet" href="src/styles/components.css?v=20260620">
-<link rel="stylesheet" href="src/styles/responsive.css?v=20260620">
+<link rel="stylesheet" href="src/styles/variables.css?v=20260622a">
+<link rel="stylesheet" href="src/styles/main.css?v=20260622a">
+<link rel="stylesheet" href="src/styles/layout.css?v=20260622a">
+<link rel="stylesheet" href="src/styles/components.css?v=20260622a">
+<link rel="stylesheet" href="src/styles/responsive.css?v=20260622a">
 <style>
 #pl{position:fixed;inset:0;z-index:10000;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:'DM Sans',system-ui,sans-serif}
 #pl-stage{text-align:center;position:relative;z-index:2}
-#pl-logo-wrap{position:relative;width:clamp(200px,38vw,300px);height:clamp(200px,38vw,300px);margin:0 auto;overflow:hidden;will-change:transform}
-.pl-layer{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none;will-change:transform,clip-path}
-.pl-layer img{width:100%;height:100%;object-fit:contain;display:block;backface-visibility:hidden}
-/* ── Phase 2: Foundation rises from below (z-index:2 on top) ── */
-#pl-table-layer{z-index:2;clip-path:inset(69% 0 0 0);transform:translateY(100%);will-change:transform}
-#pl-table-layer.in{transform:translateY(0);transition:transform .45s cubic-bezier(.16,1,.3,1)}
-/* ── Phase 3: Burgers emerge upward from behind foundation (z-index:1 behind) ── */
-#pl-burger-l-layer{z-index:1;clip-path:inset(100% 50% 0 0);will-change:clip-path}
-#pl-burger-l-layer.in{clip-path:inset(0 50% 30% 0);transition:clip-path .35s cubic-bezier(.16,1,.3,1)}
-#pl-burger-r-layer{z-index:1;clip-path:inset(100% 0 0 50%);will-change:clip-path}
-#pl-burger-r-layer.in{clip-path:inset(0 0 30% 50%);transition:clip-path .35s cubic-bezier(.16,1,.3,1)}
-/* ── Phase 6: White ambient glow pulse behind logo ── */
+#pl-logo-wrap{position:relative;width:clamp(200px,38vw,300px);height:clamp(200px,38vw,300px);margin:0 auto;display:flex;align-items:center;justify-content:center}
+#pl-img{max-width:100%;max-height:100%;object-fit:contain;opacity:0;transform:scale(.85);transition:opacity .5s cubic-bezier(.4,0,.2,1),transform .6s cubic-bezier(.34,1.56,.64,1)}
+#pl-img.in{opacity:1;transform:scale(1)}
+/* ── White ambient glow pulse behind logo ── */
 #pl-glow{position:absolute;top:50%;left:50%;width:50vmin;height:50vmin;transform:translate(-50%,-50%) scale(.5);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.12) 0%,transparent 60%);opacity:0;pointer-events:none;z-index:0;will-change:transform,opacity}
 @keyframes plGlowPulse{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}30%{opacity:1;transform:translate(-50%,-50%) scale(1)}60%{opacity:.7;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.3)}}
 #pl-glow.active{animation:plGlowPulse 1s cubic-bezier(.4,0,.2,1) forwards}
-/* ── Phase 7: Premium pop emphasis 100%→104%→100% ── */
+/* ── Premium pop emphasis 100%→104%→100% ── */
 @keyframes plPop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
 #pl-logo-wrap.pop{animation:plPop .5s cubic-bezier(.4,0,.2,1) forwards}
 /* ── Text sequences ── */
@@ -56,7 +48,7 @@
 .pl-pillar-sep.in{opacity:1}
 #pl-line-closing{font-size:clamp(12px,1.4vw,16px);color:#b81804;font-weight:500;opacity:0;transform:translateY(12px);transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1)}
 #pl-line-closing.in{opacity:1;transform:translateY(0)}
-/* ── Phase 9: Fade out ── */
+/* ── Fade out ── */
 @keyframes plFadeOut{0%{opacity:1}to{opacity:0;pointer-events:none}}
 #pl.out{animation:plFadeOut .4s ease forwards;pointer-events:none}
 @media(max-width:600px){#pl-logo-wrap{width:clamp(150px,52vw,210px);height:clamp(150px,52vw,210px)}#pl-line-hero{font-size:clamp(18px,5.5vw,26px)}#pl-seq-4 .pl-pillar-sep{margin:0 3px}}
@@ -68,15 +60,7 @@
   <div id="pl-stage">
     <div id="pl-logo-wrap">
       <div id="pl-glow"></div>
-      <div class="pl-layer" id="pl-table-layer">
-        <img id="pl-img-t" alt="Kimbweta Bites">
-      </div>
-      <div class="pl-layer" id="pl-burger-l-layer">
-        <img id="pl-img-l" alt="">
-      </div>
-      <div class="pl-layer" id="pl-burger-r-layer">
-        <img id="pl-img-r" alt="">
-      </div>
+      <img id="pl-img" alt="Kimbweta Bites">
     </div>
     <div id="pl-text">
       <div id="pl-line-welcome"></div>
@@ -329,7 +313,9 @@
 // ── Production API URL — points to Render backend ──────────
 window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
 </script>
-<script defer src="src/bundle.js?v=20260620b"></script>
+<script defer src="src/bundle.js?v=20260622a"></script>
+
+<script>window.__KB_READY__ = false;</script>
 
 <script>
 (function() {
@@ -338,29 +324,26 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
   var q = function(s) { return document.querySelectorAll(s); };
 
   var pl = $('pl'), logoWrap = $('pl-logo-wrap'), glow = $('pl-glow');
-  var tableLayer = $('pl-table-layer'), burgerL = $('pl-burger-l-layer'), burgerR = $('pl-burger-r-layer');
+  var plImg = $('pl-img');
   var elWelcome = $('pl-line-welcome'), elHero = $('pl-line-hero'), elClosing = $('pl-line-closing');
 
   var vercelBase = 'https://kimbweta-bites.vercel.app/src/assets';
   var preloaderSvgUrl = vercelBase + '/preloader-logo.svg';
-  var kbLogoDataUri = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" rx="30" fill="#f8f4f0"/><text x="100" y="115" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="72" font-weight="900" fill="#c73b1e">KB</text><circle cx="160" cy="45" r="28" fill="#c73b1e" opacity="0.15"/></svg>');
-  var fallback = preloaderSvgUrl;
+  var apiBase = window.KIMBWETA_API || 'https://kimbweta-bites.onrender.com/api/v1';
+  var renderBase = apiBase.replace('/api/v1', '');
   var revealed = false;
   var preloaderSettings = {logo:'',line1:'WELCOME TO',line2:'KIMBWETA BITES',closing:'',closingEnabled:true,duration:3};
   var plLogoSrc = '';
 
-  var setSrc = function(u, fallbackTo) {
-    [tableLayer, burgerL, burgerR].forEach(function(l) {
-      var imgs = l.getElementsByTagName('img');
-      if (imgs.length) {
-        var imgEl = imgs[0];
-        imgEl.onerror = function() {
-          if (this.src === kbLogoDataUri) { this.onerror = null; return; }
-          this.src = kbLogoDataUri;
-        };
-        imgEl.src = u;
-      }
-    });
+  var setSrc = function(u) {
+    var src = u || preloaderSvgUrl;
+    if (src.indexOf('://') === -1) src = renderBase + (src.indexOf('/') === 0 ? '' : '/') + src;
+    if (plImg) {
+      plImg.src = src;
+      plImg.onerror = function() {
+        if (this.src.indexOf('preloader-logo.svg') === -1) { this.src = preloaderSvgUrl; return; }
+      };
+    }
   };
 
   var splitChars = function(el, text, opts) {
@@ -396,17 +379,14 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
   var reveal = function() {
     if (revealed) return; revealed = true;
 
-    // Phase 2: Foundation rises from below
-    setTimeout(function() { a(tableLayer, 'in'); }, 120);
+    // Phase 1: Logo fades in and scales up
+    setTimeout(function() { if (plImg) a(plImg, 'in'); }, 120);
 
-    // Phase 3: Both burgers emerge upward from behind the foundation
-    setTimeout(function() { a(burgerL, 'in'); a(burgerR, 'in'); }, 400);
+    // Phase 2: White ambient glow pulse behind logo
+    setTimeout(function() { if (glow) a(glow, 'active'); }, 550);
 
-    // Phase 6: White ambient glow pulse behind assembled logo
-    setTimeout(function() { if (glow) a(glow, 'active'); }, 650);
-
-    // Phase 7: Premium pop emphasis (100% → 104% → 100%)
-    setTimeout(function() { a(logoWrap, 'pop'); }, 1050);
+    // Phase 3: Premium pop emphasis (100% → 104% → 100%)
+    setTimeout(function() { a(logoWrap, 'pop'); }, 950);
 
     // ─── Text Sequences ───
     setTimeout(function() {
@@ -520,12 +500,9 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
     splitWords($('pl-line-community'), 'Connecting Friends Through Food.', [1]);
     if (pt) { elClosing.style.display = 'block'; elClosing.textContent = pt; }
     else { elClosing.style.display = 'none'; }
-    if (plogo) { setSrc(plogo); }
-    else { setSrc(fallback); }
+    setSrc(plogo);
     tryReveal();
   } else {
-    var apiBase = window.KIMBWETA_API || 'https://kimbweta-bites.onrender.com/api/v1';
-    var renderBase = apiBase.replace('/api/v1', '');
     var xhr = new XMLHttpRequest();
     xhr.open('GET', apiBase + '/settings/public', true);
     xhr.onload = function() {
@@ -533,16 +510,13 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
         var d = JSON.parse(xhr.responseText);
         applySettings(d);
         var u = preloaderSettings.logo;
-        if (u) {
-          if (u.indexOf('://') === -1) u = renderBase + (u.indexOf('/') === 0 ? '' : '/uploads/settings/') + u;
-          setSrc(u, fallback);
-        } else { setSrc(fallback); }
-      } catch(e) { setSrc(fallback); }
+        setSrc(u);
+      } catch(e) { setSrc(); }
       tryReveal();
     };
-    xhr.onerror = function() { setSrc(fallback); tryReveal(); };
+    xhr.onerror = function() { setSrc(); tryReveal(); };
     xhr.send();
-    setTimeout(function() { if (!revealed) { setSrc(fallback); tryReveal(); } }, 2000);
+    setTimeout(function() { if (!revealed) { setSrc(); tryReveal(); } }, 2000);
   }
 })();
 
@@ -557,8 +531,6 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
     }
   }, 200);
 })();
-
-window.__KB_READY__ = false;
 </script>
 
 <script>
@@ -633,23 +605,22 @@ document.addEventListener('click', function(e) {
 
 function applySiteLogo(url) {
   var vercelSvg = 'https://kimbweta-bites.vercel.app/src/assets/site-logo.svg';
+  var useUrl = url || vercelSvg;
+  if (useUrl.indexOf('://') === -1) {
+    if (useUrl.indexOf('/') !== 0) useUrl = '/uploads/settings/' + useUrl;
+    useUrl = (KB.API_BASE.replace('/api/v1','')) + useUrl;
+  }
   function apply(imgId, iconId) {
     var img = document.getElementById(imgId);
     var icon = document.getElementById(iconId);
     if (!img) return;
-    var finalSrc = url || vercelSvg;
-    if (finalSrc.indexOf('://') === -1) {
-      if (finalSrc.indexOf('/') !== 0) finalSrc = '/uploads/settings/' + finalSrc;
-      finalSrc = (KB.API_BASE.replace('/api/v1','')) + finalSrc;
-    }
+    img.onload = function() { img.style.display = 'block'; if (icon) icon.style.display = 'none'; };
     img.onerror = function() {
-      this.onerror = function() { this.onerror = null; this.style.display = 'none'; if (icon) icon.style.display = 'flex'; };
-      if (this.src !== vercelSvg) { this.src = vercelSvg; return; }
+      this.onerror = null;
+      if (this.src.indexOf('site-logo.svg') === -1) { this.src = vercelSvg; return; }
       this.style.display = 'none'; if (icon) icon.style.display = 'flex';
     };
-    img.src = finalSrc;
-    img.style.display = 'block';
-    if (icon) icon.style.display = 'none';
+    img.src = useUrl;
   }
   apply('siteLogoImg', 'siteLogoIcon');
   apply('siteLogoImg2', 'siteLogoIcon2');
@@ -661,7 +632,8 @@ function applySiteLogo(url) {
 async function loadSiteLogo() {
   try {
     var data = await API.getSettings();
-    if (data && data.data) applySiteLogo(data.data.site_logo);
+    if (data && data.data && data.data.site_logo) applySiteLogo(data.data.site_logo);
+    else applySiteLogo();
   } catch { applySiteLogo(); }
 }
 

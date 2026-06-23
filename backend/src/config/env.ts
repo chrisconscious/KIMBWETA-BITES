@@ -34,6 +34,10 @@ const envSchema = z.object({
   RATE_LIMIT_SUPER_ADMIN:  z.coerce.number().default(500),
   // File upload limits
   MAX_VIDEO_SIZE_MB:       z.coerce.number().default(50),
+  // Cloudinary
+  CLOUDINARY_CLOUD_NAME:   z.string().optional(),
+  CLOUDINARY_API_KEY:      z.string().optional(),
+  CLOUDINARY_API_SECRET:   z.string().optional(),
   // Backup
   BACKUP_DIR:              z.string().default('./backup'),
   // Idempotency

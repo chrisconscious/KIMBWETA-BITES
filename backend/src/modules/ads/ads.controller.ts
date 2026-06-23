@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { adsService } from './ads.service';
 import { AuthenticatedRequest } from '../../types';
 import { success, created } from '../../utils/response';
+import { uploadToCloudinary } from '../../services/cloudinary.service';
 
 export class AdsController {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -47,8 +48,8 @@ export class AdsController {
         res.status(400).json({ success: false, message: 'No file uploaded' });
         return;
       }
-      const url = `/uploads/ads/${file.filename}`;
-      success(res, { url, filename: file.filename, size: file.size, mimetype: file.mimetype }, 'File uploaded');
+      const result = await uploadToCloudinary(file.buffer, 'ads');
+      success(res, { url: result.secureUrl, filename: file.originalname, size: file.size, mimetype: file.mimetype }, 'File uploaded');
     } catch (err) { next(err); }
   }
 

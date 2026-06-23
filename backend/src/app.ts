@@ -5,7 +5,6 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import path from 'path';
-import fs from 'fs';
 import { prisma } from './database/prisma';
 import { env } from './config/env';
 import { logger } from './config/logger';
@@ -94,12 +93,7 @@ export function createApp(): Application {
     }));
   }
 
-  const uploadsBase = path.isAbsolute(env.UPLOAD_DIR) ? env.UPLOAD_DIR : path.resolve(process.cwd(), env.UPLOAD_DIR);
-
-  fs.mkdirSync(uploadsBase, { recursive: true });
-  ['settings', 'categories', 'ads', 'products'].forEach(sub => fs.mkdirSync(path.join(uploadsBase, sub), { recursive: true }));
-
-  app.use('/uploads', express.static(uploadsBase));
+  app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 
   app.use(rateLimit({
     windowMs: env.RATE_LIMIT_WINDOW_MS,
@@ -122,14 +116,7 @@ export function createApp(): Application {
       healthy = false;
     }
 
-    try {
-      fs.accessSync(uploadsBase, fs.constants.W_OK);
-      checks.uploadDirectory = 'writable';
-    } catch {
-      checks.uploadDirectory = 'not-writable';
-      healthy = false;
-    }
-
+    checks.uploadDirectory = 'cloudinary';
     checks.bruteForceLocks = '0';
 
     const statusCode = healthy ? 200 : 503;

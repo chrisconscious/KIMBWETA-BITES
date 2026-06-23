@@ -40,7 +40,10 @@ async function restoreSession() {
   }
   currentUser = { ...cached, role: String(cached ? cached.role || '' : '').toLowerCase() };
   var lastUpdated = Storage.get('kb_user_updated');
-  var needsRefresh = !lastUpdated || (Date.now() - lastUpdated) > (5 * 60 * 1000);
+  var jwtPayload = typeof _decodeJWTPayload === 'function' ? _decodeJWTPayload(token) : null;
+  var jwtRole = jwtPayload && jwtPayload.role ? String(jwtPayload.role).toLowerCase() : null;
+  var roleMismatch = jwtRole && jwtRole !== currentUser.role;
+  var needsRefresh = !lastUpdated || (Date.now() - lastUpdated) > (5 * 60 * 1000) || roleMismatch;
 
   if (needsRefresh) {
     try {

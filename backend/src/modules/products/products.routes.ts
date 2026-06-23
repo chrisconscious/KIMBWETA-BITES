@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
 import { productsController } from './products.controller';
 import { authenticate, requireRole } from '../../middleware/auth.middleware';
 import { validate } from '../../middleware/validate.middleware';
@@ -8,16 +7,12 @@ import { createProductSchema, updateProductSchema, reviewProductSchema, updateSt
 
 const router = Router();
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, process.env.UPLOAD_DIR || 'uploads'),
-  filename: (_req, file, cb) => cb(null, `product-${Date.now()}${path.extname(file.originalname)}`),
-});
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: (parseInt(process.env.MAX_FILE_SIZE_MB || '5')) * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = /jpeg|jpg|png|webp/;
-    cb(null, allowed.test(file.mimetype) && allowed.test(path.extname(file.originalname).toLowerCase()));
+    cb(null, allowed.test(file.mimetype));
   },
 });
 

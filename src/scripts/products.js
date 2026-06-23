@@ -134,11 +134,10 @@ const Products = {
             ${p.popular ? `<span class="badge badge-brand">${Icons.fire} Popular</span>` : ''}
             ${lowStock  ? `<span class="badge badge-red">${Icons.bolt} ${p.stock} left</span>` : ''}
             ${outOfStock ? '<span class="badge badge-red">Sold out</span>' : ''}
-            <button class="badge badge-share" onclick="event.stopPropagation();Share.show('${p.id}','${p.name.replace(/'/g,"\\'")}')" title="Share with friend">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <button class="badge badge-share" onclick="event.stopPropagation();Share.show('${p.id}','${p.name.replace(/'/g,"\\'")}')" title="Share">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B81804" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             </button>
           </div>
-          ${!outOfStock ? `<button class="quick-add" onclick="event.stopPropagation();Cart.quickAdd('${p.id}')">${Icons.plus}</button>` : ''}
         </div>
         <div class="product-body">
           <div class="product-name">${p.name}</div>

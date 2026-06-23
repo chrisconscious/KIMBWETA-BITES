@@ -35,5 +35,11 @@ services:
         value: "500"
       - key: MAX_FILE_SIZE_MB
         value: "5"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
       - key: LOG_LEVEL
         value: info

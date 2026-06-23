@@ -1,5 +1,4 @@
 import { prisma } from '../../database/prisma';
-import { AppError } from '../../middleware/error.middleware';
 
 export class SettingsService {
   async getPublic() {
@@ -19,12 +18,6 @@ export class SettingsService {
       create: { key, value },
       update: { value },
     });
-  }
-
-  async uploadLogo(file: Express.Multer.File) {
-    const url = `/uploads/settings/${file.filename}`;
-    await this.set('site_logo', url);
-    return url;
   }
 }
 

@@ -141,6 +141,13 @@ const EP = {
   DISCOVER_POPULAR:      '/discover/popular',
   DISCOVER_NEW:          '/discover/new-arrivals',
 
+  // Super Admin Dashboard
+  SA_DASHBOARD:     '/super-admin/dashboard',
+  SA_USERS:         '/super-admin/users',
+  SA_ANALYTICS:     '/super-admin/analytics',
+  SA_CAMPUS_ADMINS: '/super-admin/campus-admins',
+  SA_USER_STATUS:   (id) => `/super-admin/users/${id}/status`,
+
   // Super Admin Commerce
   SA_COMMERCE_OVERVIEW: '/super-admin/commerce/overview',
   SA_COMMERCE_REVENUE:  '/super-admin/commerce/revenue',

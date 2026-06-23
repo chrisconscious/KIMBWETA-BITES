@@ -3,7 +3,7 @@ import { prisma } from '../../database/prisma';
 import { sendSuccess } from '../../utils/response';
 import { AppError } from '../../middleware/error.middleware';
 import type { CreateProductDto, UpdateProductDto, ReviewProductDto, UpdateStockDto } from './products.validators';
-import { env } from '../../config/env';
+import { uploadToCloudinary } from '../../services/cloudinary.service';
 
 class ProductsController {
   /** Public listing — campus-filtered, approved only */
@@ -92,7 +92,7 @@ class ProductsController {
       if (count >= campus.maxProducts) throw new AppError(`Campus product limit reached (max: ${campus.maxProducts})`, 400);
 
       const imageUrl = req.file
-        ? `${env.NODE_ENV === 'production' ? '' : `http://localhost:${env.PORT ?? 3000}`}/uploads/${req.file.filename}`
+        ? (await uploadToCloudinary(req.file.buffer, 'products')).secureUrl
         : null;
 
       const product = await prisma.product.create({
@@ -126,7 +126,9 @@ class ProductsController {
       if (!product) throw new AppError('Product not found', 404);
       if (user.role === 'admin' && product.campusId !== user.campusId) throw new AppError('Access denied', 403);
 
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
+      const imageUrl = req.file
+        ? (await uploadToCloudinary(req.file.buffer, 'products')).secureUrl
+        : undefined;
       const body = req.body as UpdateProductDto;
 
       const updated = await prisma.product.update({

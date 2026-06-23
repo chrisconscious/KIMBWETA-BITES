@@ -166,6 +166,13 @@ const EP = {
   DISCOVER_POPULAR:      '/discover/popular',
   DISCOVER_NEW:          '/discover/new-arrivals',
 
+  // Super Admin Dashboard
+  SA_DASHBOARD:     '/super-admin/dashboard',
+  SA_USERS:         '/super-admin/users',
+  SA_ANALYTICS:     '/super-admin/analytics',
+  SA_CAMPUS_ADMINS: '/super-admin/campus-admins',
+  SA_USER_STATUS:   (id) => `/super-admin/users/${id}/status`,
+
   // Super Admin Commerce
   SA_COMMERCE_OVERVIEW: '/super-admin/commerce/overview',
   SA_COMMERCE_REVENUE:  '/super-admin/commerce/revenue',
@@ -917,11 +924,10 @@ const Products = {
             ${p.popular ? `<span class="badge badge-brand">${Icons.fire} Popular</span>` : ''}
             ${lowStock  ? `<span class="badge badge-red">${Icons.bolt} ${p.stock} left</span>` : ''}
             ${outOfStock ? '<span class="badge badge-red">Sold out</span>' : ''}
-            <button class="badge badge-share" onclick="event.stopPropagation();Share.show('${p.id}','${p.name.replace(/'/g,"\\'")}')" title="Share with friend">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <button class="badge badge-share" onclick="event.stopPropagation();Share.show('${p.id}','${p.name.replace(/'/g,"\\'")}')" title="Share">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B81804" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             </button>
           </div>
-          ${!outOfStock ? `<button class="quick-add" onclick="event.stopPropagation();Cart.quickAdd('${p.id}')">${Icons.plus}</button>` : ''}
         </div>
         <div class="product-body">
           <div class="product-name">${p.name}</div>
@@ -1186,7 +1192,10 @@ async function restoreSession() {
   }
   currentUser = { ...cached, role: String(cached ? cached.role || '' : '').toLowerCase() };
   var lastUpdated = Storage.get('kb_user_updated');
-  var needsRefresh = !lastUpdated || (Date.now() - lastUpdated) > (5 * 60 * 1000);
+  var jwtPayload = typeof _decodeJWTPayload === 'function' ? _decodeJWTPayload(token) : null;
+  var jwtRole = jwtPayload && jwtPayload.role ? String(jwtPayload.role).toLowerCase() : null;
+  var roleMismatch = jwtRole && jwtRole !== currentUser.role;
+  var needsRefresh = !lastUpdated || (Date.now() - lastUpdated) > (5 * 60 * 1000) || roleMismatch;
 
   if (needsRefresh) {
     try {
