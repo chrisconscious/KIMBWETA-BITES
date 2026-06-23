@@ -26,6 +26,13 @@ export function errorHandler(
   // Log everything
   logger.error({ err, url: req.url, method: req.method }, 'Unhandled error');
 
+  // Ensure CORS headers on ALL error responses
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   // AppError — our own controlled errors
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
@@ -47,19 +54,32 @@ export function errorHandler(
       res.status(404).json({ success: false, message: 'Record not found' });
       return;
     }
+    res.status(500).json({
+      success: false,
+      message: `Database error: ${err.message}`,
+    });
+    return;
   }
 
   // Prisma validation errors
   if (err instanceof Prisma.PrismaClientValidationError) {
-    res.status(400).json({ success: false, message: 'Invalid data provided' });
+    res.status(400).json({ success: false, message: `Invalid data: ${err.message}` });
+    return;
+  }
+
+  // Prisma initialization errors (wrong schema, missing tables, etc.)
+  if (err instanceof Prisma.PrismaClientInitializationError) {
+    res.status(500).json({
+      success: false,
+      message: `Database initialization error: ${err.message}`,
+    });
     return;
   }
 
   // Generic 500
   res.status(500).json({
     success: false,
-    message: 'Internal server error',
-    ...(env.NODE_ENV === 'development' && { stack: err.stack }),
+    message: err.message || 'Internal server error',
   });
 }
 
@@ -67,6 +87,11 @@ export function errorHandler(
  * 404 handler for unmatched routes
  */
 export function notFoundHandler(req: Request, res: Response): void {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
   res.status(404).json({
     success: false,
     message: `Route ${req.method} ${req.url} not found`,

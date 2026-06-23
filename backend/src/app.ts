@@ -74,8 +74,11 @@ export function createApp(): Application {
   app.use(cors({
     origin: (origin, callback) => {
       const allowed = env.CORS_ORIGINS.split(',').map((o) => o.trim());
-      if (!origin || allowed.includes('*') || allowed.includes(origin)) callback(null, true);
-      else callback(new Error(`CORS blocked: ${origin}`));
+      if (!origin || allowed.includes('*') || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

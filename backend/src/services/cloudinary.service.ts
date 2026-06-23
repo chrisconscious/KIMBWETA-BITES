@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
+import { AppError } from '../middleware/error.middleware';
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_CLOUD_NAME,
@@ -10,9 +11,10 @@ cloudinary.config({
 
 function ensureConfigured() {
   if (!env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
-    throw new Error(
-      'Cloudinary not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, ' +
-      'and CLOUDINARY_API_SECRET in environment variables.'
+    throw new AppError(
+      'Cloudinary connection failed. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, ' +
+      'and CLOUDINARY_API_SECRET in environment variables.',
+      502
     );
   }
 }
