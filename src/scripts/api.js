@@ -221,18 +221,14 @@ const API = {
     return API.get(`/products?campusId=${campusId}&limit=100`, 15000);
   },
   async createProduct(formData) {
-    const token = Storage.getStr('kb_token');
-    return fetch(`${KB.API_BASE}/products`, {
+    return API.fetch('/products', {
       method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     });
   },
   async updateProduct(id, formData) {
-    const token = Storage.getStr('kb_token');
-    return fetch(`${KB.API_BASE}/products/${id}`, {
+    return API.fetch(`/products/${id}`, {
       method: 'PATCH',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     });
   },
@@ -252,12 +248,10 @@ const API = {
   async getSettings()                        { return API.get(EP.SETTINGS_PUBLIC, 300000); },
   async getAllSettings()                     { return API.get(EP.SETTINGS, 30000); },
   async uploadLogo(file) {
-    const token = Storage.getStr('kb_token');
     const fd = new FormData();
     fd.append('file', file);
-    return fetch(`${KB.API_BASE}${EP.SETTINGS_LOGO}`, {
+    return API.fetch(EP.SETTINGS_LOGO, {
       method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: fd,
     });
   },
@@ -267,12 +261,10 @@ const API = {
     return API.post(EP.SETTINGS_SET, { key, value });
   },
   async uploadPreloaderLogo(file) {
-    const token = Storage.getStr('kb_token');
     const fd = new FormData();
     fd.append('file', file);
-    return fetch(`${KB.API_BASE}${EP.SETTINGS_PRELOADER_LOGO}`, {
+    return API.fetch(EP.SETTINGS_PRELOADER_LOGO, {
       method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: fd,
     });
   },
