@@ -418,13 +418,7 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
       }
     }, 2100);
 
-    // Phase 9: After animation, show connecting text and wait for data
-    setTimeout(function() {
-      var $c = $('pl-line-closing');
-      if ($c) { $c.textContent = 'Connecting to campus\u2026'; $c.style.display = 'block'; a($c, 'in'); }
-    }, 2600);
-
-    // Phase 10: Fade — wait for data with generous timeout
+    // Phase 9: Wait for data with generous timeout
     var dur = Math.max(preloaderSettings.duration || 3, 2);
     var fadeDelay = 2800 + (dur - 3) * 400;
     setTimeout(function() {
