@@ -3,17 +3,18 @@
  *
  * Usage:
  *   1. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in .env
- *   2. node scripts/migrate-to-cloudinary.js
+ *   2. node scripts/migrate-to-cloudinary.js [--clear-stale]
+ *
+ * Flags:
+ *   --clear-stale  Also set DB records to null when local file no longer exists
  *
  * What it does:
  *   - Scans the database for all image URL fields that start with /uploads/
- *   - Reads the local file (if it still exists)
- *   - Uploads to Cloudinary
+ *   - Reads the local file (if it still exists) and uploads to Cloudinary
  *   - Updates the database record with the Cloudinary URL
  *
- * NOTE: On Render, local files are ephemeral. If the files have already been
- * deleted, this script will log a warning and skip. The important thing is
- * that ALL NEW uploads go to Cloudinary from now on.
+ * NOTE: On Render, local files are ephemeral (lost on restart). The important
+ * thing is that ALL NEW uploads go to Cloudinary from now on.
  */
 
 const cloudinary = require('cloudinary').v2;
@@ -37,9 +38,15 @@ const UPLOAD_BASE = process.env.UPLOAD_DIR
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+const CLEAR_STALE = process.argv.includes('--clear-stale');
+
 async function uploadFileToCloudinary(filePath, folder) {
   try {
     if (!fs.existsSync(filePath)) {
+      if (CLEAR_STALE) {
+        console.warn(`⚠  File not found: ${filePath} — will clear DB record`);
+        return '__CLEAR__';
+      }
       console.warn(`⚠  File not found: ${filePath} — skipping`);
       return null;
     }
@@ -80,7 +87,13 @@ async function migrateSettings() {
     const localPath = localPathFromUrl(setting.value);
     if (!localPath) continue;
     const url = await uploadFileToCloudinary(localPath, 'settings');
-    if (url) {
+    if (url === '__CLEAR__') {
+      await prisma.siteSetting.update({
+        where: { id: setting.id },
+        data: { value: null },
+      });
+      console.log(`  ✓ Cleared ${setting.key} (file not found)`);
+    } else if (url) {
       await prisma.siteSetting.update({
         where: { id: setting.id },
         data: { value: url },
@@ -107,11 +120,11 @@ async function migrateCategories() {
       const localPath = localPathFromUrl(cat.iconUrl);
       if (localPath) {
         const url = await uploadFileToCloudinary(localPath, 'categories');
-        if (url) {
-          await prisma.category.update({
-            where: { id: cat.id },
-            data: { iconUrl: url },
-          });
+        if (url === '__CLEAR__') {
+          await prisma.category.update({ where: { id: cat.id }, data: { iconUrl: null } });
+          console.log(`  ✓ Cleared category ${cat.id} icon`);
+        } else if (url) {
+          await prisma.category.update({ where: { id: cat.id }, data: { iconUrl: url } });
           console.log(`  ✓ Updated category ${cat.id} icon`);
         }
       }
@@ -121,11 +134,11 @@ async function migrateCategories() {
       const localPath = localPathFromUrl(cat.coverImage);
       if (localPath) {
         const url = await uploadFileToCloudinary(localPath, 'categories');
-        if (url) {
-          await prisma.category.update({
-            where: { id: cat.id },
-            data: { coverImage: url },
-          });
+        if (url === '__CLEAR__') {
+          await prisma.category.update({ where: { id: cat.id }, data: { coverImage: null } });
+          console.log(`  ✓ Cleared category ${cat.id} cover`);
+        } else if (url) {
+          await prisma.category.update({ where: { id: cat.id }, data: { coverImage: url } });
           console.log(`  ✓ Updated category ${cat.id} cover`);
         }
       }
@@ -144,11 +157,11 @@ async function migrateProducts() {
     const localPath = localPathFromUrl(product.imageUrl);
     if (!localPath) continue;
     const url = await uploadFileToCloudinary(localPath, 'products');
-    if (url) {
-      await prisma.product.update({
-        where: { id: product.id },
-        data: { imageUrl: url },
-      });
+    if (url === '__CLEAR__') {
+      await prisma.product.update({ where: { id: product.id }, data: { imageUrl: null } });
+      console.log(`  ✓ Cleared product ${product.id} image (file not found)`);
+    } else if (url) {
+      await prisma.product.update({ where: { id: product.id }, data: { imageUrl: url } });
       console.log(`  ✓ Updated product ${product.id}`);
     }
   }
@@ -171,11 +184,11 @@ async function migrateAds() {
       const localPath = localPathFromUrl(ad.imageUrl);
       if (localPath) {
         const url = await uploadFileToCloudinary(localPath, 'ads');
-        if (url) {
-          await prisma.ad.update({
-            where: { id: ad.id },
-            data: { imageUrl: url },
-          });
+        if (url === '__CLEAR__') {
+          await prisma.ad.update({ where: { id: ad.id }, data: { imageUrl: null } });
+          console.log(`  ✓ Cleared ad ${ad.id} image`);
+        } else if (url) {
+          await prisma.ad.update({ where: { id: ad.id }, data: { imageUrl: url } });
           console.log(`  ✓ Updated ad ${ad.id} image`);
         }
       }
@@ -185,11 +198,11 @@ async function migrateAds() {
       const localPath = localPathFromUrl(ad.videoUrl);
       if (localPath) {
         const url = await uploadFileToCloudinary(localPath, 'ads');
-        if (url) {
-          await prisma.ad.update({
-            where: { id: ad.id },
-            data: { videoUrl: url },
-          });
+        if (url === '__CLEAR__') {
+          await prisma.ad.update({ where: { id: ad.id }, data: { videoUrl: null } });
+          console.log(`  ✓ Cleared ad ${ad.id} video`);
+        } else if (url) {
+          await prisma.ad.update({ where: { id: ad.id }, data: { videoUrl: url } });
           console.log(`  ✓ Updated ad ${ad.id} video`);
         }
       }
@@ -208,11 +221,11 @@ async function migrateUsers() {
     const localPath = localPathFromUrl(user.profileImageUrl);
     if (!localPath) continue;
     const url = await uploadFileToCloudinary(localPath, 'profiles');
-    if (url) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { profileImageUrl: url },
-      });
+    if (url === '__CLEAR__') {
+      await prisma.user.update({ where: { id: user.id }, data: { profileImageUrl: null } });
+      console.log(`  ✓ Cleared user ${user.id} profile image`);
+    } else if (url) {
+      await prisma.user.update({ where: { id: user.id }, data: { profileImageUrl: url } });
       console.log(`  ✓ Updated user ${user.id}`);
     }
   }
@@ -229,11 +242,11 @@ async function migrateCollections() {
     const localPath = localPathFromUrl(collection.coverImage);
     if (!localPath) continue;
     const url = await uploadFileToCloudinary(localPath, 'collections');
-    if (url) {
-      await prisma.collection.update({
-        where: { id: collection.id },
-        data: { coverImage: url },
-      });
+    if (url === '__CLEAR__') {
+      await prisma.collection.update({ where: { id: collection.id }, data: { coverImage: null } });
+      console.log(`  ✓ Cleared collection ${collection.id} cover`);
+    } else if (url) {
+      await prisma.collection.update({ where: { id: collection.id }, data: { coverImage: url } });
       console.log(`  ✓ Updated collection ${collection.id}`);
     }
   }
@@ -250,11 +263,11 @@ async function migrateCampuses() {
     const localPath = localPathFromUrl(campus.logoUrl);
     if (!localPath) continue;
     const url = await uploadFileToCloudinary(localPath, 'campuses');
-    if (url) {
-      await prisma.campus.update({
-        where: { id: campus.id },
-        data: { logoUrl: url },
-      });
+    if (url === '__CLEAR__') {
+      await prisma.campus.update({ where: { id: campus.id }, data: { logoUrl: null } });
+      console.log(`  ✓ Cleared campus ${campus.id} logo`);
+    } else if (url) {
+      await prisma.campus.update({ where: { id: campus.id }, data: { logoUrl: url } });
       console.log(`  ✓ Updated campus ${campus.id}`);
     }
   }
