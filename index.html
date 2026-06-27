@@ -327,8 +327,6 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
   var plImg = $('pl-img');
   var elWelcome = $('pl-line-welcome'), elHero = $('pl-line-hero'), elClosing = $('pl-line-closing');
 
-  var vercelBase = 'https://kimbweta-bites.vercel.app/src/assets';
-  var preloaderSvgUrl = vercelBase + '/preloader-logo.svg';
   var apiBase = window.KIMBWETA_API || 'https://kimbweta-bites.onrender.com/api/v1';
   var renderBase = apiBase.replace('/api/v1', '');
   var revealed = false;
@@ -336,13 +334,15 @@ window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';
   var plLogoSrc = '';
 
   var setSrc = function(u) {
-    var src = u || preloaderSvgUrl;
-    if (src.indexOf('://') === -1) src = renderBase + (src.indexOf('/') === 0 ? '' : '/') + src;
     if (plImg) {
-      plImg.src = src;
-      plImg.onerror = function() {
-        if (this.src.indexOf('preloader-logo.svg') === -1) { this.src = preloaderSvgUrl; return; }
-      };
+      if (u) {
+        if (u.indexOf('://') === -1) u = renderBase + (u.indexOf('/') === 0 ? '' : '/') + u;
+        plImg.src = u;
+        plImg.style.display = '';
+      } else {
+        plImg.removeAttribute('src');
+        plImg.style.display = 'none';
+      }
     }
   };
 
