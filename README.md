@@ -17,31 +17,34 @@ A fully dynamic, fully connected campus food delivery platform for Tanzania univ
 
 ```
 kimbweta-system/
-├── frontend/
-│   ├── index.html          ← Public store (customers)
-│   ├── admin.html          ← Campus Admin dashboard
-│   ├── super-admin.html    ← Super Admin dashboard
-│   └── src/
-│       ├── styles/         ← CSS (variables, main, layout, components)
-│       ├── scripts/        ← JS (api, auth, products, cart, ads, checkout)
-│       ├── components/     ← UI components (toast, modal, search, FAB)
-│       ├── config/         ← constants.js, endpoints.js
-│       └── utils/          ← storage.js, helpers.js, validators.js
-├── backend/
+├── index.html          ← Public store (customers) — served from repo root
+├── admin.html          ← Campus Admin dashboard
+├── super-admin.html    ← Super Admin dashboard
+├── src/                ← Frontend assets
+│   ├── styles/         ← CSS (variables, main, layout, components, responsive, preloader)
+│   ├── scripts/        ← JS (api, auth, products, cart, ads, checkout, preloader)
+│   ├── components/     ← UI components (toast, modal, search, FAB)
+│   ├── config/         ← constants.js, endpoints.js
+│   └── utils/          ← storage.js, helpers.js, validators.js
+├── vercel.json         ← Vercel config (frontend root = repo root)
+├── backend/            ← Express + Prisma + Socket.io API (deployed on Render)
 │   ├── src/
-│   │   ├── modules/        ← auth, products, orders, ads, campuses, riders…
-│   │   ├── middleware/     ← auth, error, validate, audit
-│   │   ├── database/       ← prisma.ts
-│   │   ├── config/         ← env.ts, logger.ts
-│   │   └── utils/          ← jwt.ts, response.ts, otp.ts
+│   │   ├── modules/    ← auth, products, orders, ads, campuses, riders…
+│   │   ├── middleware/ ← auth, error, validate, audit, security
+│   │   ├── database/   ← prisma.ts
+│   │   ├── config/     ← env.ts, logger.ts
+│   │   ├── services/   ← redis.service.ts, cloudinary.service.ts
+│   │   ├── sockets/    ← socket.service.ts
+│   │   └── utils/      ← jwt.ts, response.ts, otp.ts
 │   ├── prisma/
 │   │   ├── schema.prisma   ← Full database schema
 │   │   └── seed.ts         ← Seeds super admin + sample data
-│   ├── .env                ← Environment variables
+│   ├── render.yaml         ← Render deployment config
+│   ├── scripts/            ← DB utilities (backup, migrate-to-cloudinary)
 │   └── package.json
 └── database/
-    ├── schema.sql          ← PostgreSQL schema
-    └── seed.sql            ← SQL seed data
+    ├── schema.sql      ← PostgreSQL schema
+    └── seed.sql        ← SQL seed data
 ```
 
 ---
@@ -88,25 +91,26 @@ npm run dev
 
 ### Step 3: Frontend
 
-No build step required. Serve the `frontend/` folder with any static file server:
+No build step required. The frontend lives at the repo root. Serve it with any static file server:
 
 **Option A — VS Code Live Server:**
-1. Open `frontend/` in VS Code
+1. Open the repo root in VS Code
 2. Right-click `index.html` → Open with Live Server
 3. Opens at `http://localhost:5500`
 
 **Option B — Python:**
 ```bash
-cd frontend
 python3 -m http.server 3001
 # Open http://localhost:3001
 ```
 
 **Option C — Node serve:**
 ```bash
-cd frontend
 npx serve . -p 3001
 ```
+
+> Note: `index.html` points at the deployed API (`window.KIMBWETA_API`).
+> For full local development, point it at `http://localhost:3000/api/v1` (see "Port conflict" below).
 
 ---
 
@@ -248,7 +252,7 @@ npx prisma generate
 # Change backend port in .env
 PORT=3001
 
-# Change KB.API_BASE in frontend/src/config/constants.js
+# Change KB.API_BASE in src/config/constants.js
 API_BASE: 'http://localhost:3001/api/v1'
 ```
 
@@ -272,13 +276,14 @@ API_BASE: 'http://localhost:3001/api/v1'
 
 ### Frontend — Vercel
 1. On [vercel.com](https://vercel.com) → **Add New Project** → connect same repo
-2. **Root Directory**: `frontend`
+2. **Root Directory**: repo root (the frontend IS the root — `index.html`, `admin.html`, `super-admin.html`, `src/`)
 3. **Build**: leave default (static)
-4. Before deploying, set the API URL in `frontend/index.html`:
+4. The API URL is set in `index.html`:
    ```html
-   <script>window.KIMBWETA_API = 'https://kimbweta-api.onrender.com/api/v1';</script>
+   <script>window.KIMBWETA_API = 'https://kimbweta-bites.onrender.com/api/v1';</script>
    ```
-5. Deploy — your site is live at `https://kimbweta-bites.vercel.app`
+5. `vercel.json` handles routes: `/uploads/*` rewrites to the Render backend; `/src/*` assets are immutably cached
+6. Deploy — your site is live at `https://kimbweta-bites.vercel.app`
 
 ### Alternative — Railway (all-in-one)
 1. Create project on [railway.com](https://railway.com)
