@@ -50,3 +50,6 @@ coverage/
 frontend/
 
 .vercel
+
+# Deliverable archives
+*.zip
