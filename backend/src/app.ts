@@ -135,9 +135,6 @@ export function createApp(): Application {
   // XSS input sanitization — applied globally
   app.use(sanitizeInput);
 
-  const frontendPath = path.resolve(__dirname, '..', '..', 'frontend');
-  app.use(express.static(frontendPath));
-
   app.get('/', (_req, res) => {
     res.json({
       success: true,
